@@ -396,7 +396,7 @@ const TRAIL = {
         cover:"assets/img/cover-f7.webp",
         keyq:"공룡이 살던 시절, 이곳은 어떤 지역이었을까?",
         photos:["전경","노두","근접"],
-        tool:"distance",
+        tool:"distance", distPair:["f3","f7"],
         interps:[
           {id:"i1", label:"공룡알 화석은 어디에, 어떤 모습으로 남아 있나요? 둥지바위에서 본 것과 비교해 보세요."},
           {id:"i2", label:"오늘 본 암석과 화석을 모두 떠올려, 공룡이 살던 시절 이곳의 풍경을 한 장면으로 그리듯 써 보세요. 물은 어떤 모습이었고, 땅은 어떠했으며, 어떤 생물이 있었을까요?"},
@@ -945,18 +945,21 @@ function initDistance(box, site, d){
   const host=box.querySelector("#distBox"), out=box.querySelector("#distOut"),
         mapHost=box.querySelector("#distMap");
   if(!host) return;
-  const pts=[];
+  const all=[];
   TRAIL.courses.forEach(c=>c.sites.forEach(s2=>{
-    const g=gpsOf(s2.id); if(g) pts.push({id:s2.id,name:s2.name,...g});
+    if(s2.kind==="tutorial") return;
+    all.push({id:s2.id, name:s2.name, ...(gpsOf(s2.id)||{})});
   }));
-  if(pts.length<2){
-    if(mapHost) mapHost.remove();
-    host.innerHTML=`<p class="hint" style="margin:0">아직 위치를 기록한 지점이 ${pts.length}곳뿐입니다. 각 지점의 <b>장소</b>에서 현재 위치를 먼저 기록하세요.</p>`;
-    return;
-  }
-  const opts=sel=>pts.map(p=>`<option value="${esc(p.id)}"${p.id===sel?" selected":""}>${esc(p.name)}</option>`).join("");
-  const a0=d.distA&&pts.some(p=>p.id===d.distA)?d.distA:pts[0].id;
-  const b0=d.distB&&pts.some(p=>p.id===d.distB)?d.distB:pts[pts.length-1].id;
+  const pts=all.filter(p=>typeof p.lat==="number");
+  const pair=site.distPair||[];
+  const pick=(saved,want,fallback)=>{
+    if(saved&&all.some(p=>p.id===saved)) return saved;
+    if(want&&all.some(p=>p.id===want)) return want;
+    return fallback;
+  };
+  const a0=pick(d.distA, pair[0], (pts[0]||all[0]).id);
+  const b0=pick(d.distB, pair[1], (pts[pts.length-1]||all[all.length-1]).id);
+  const opts=sel=>all.map(p=>`<option value="${esc(p.id)}"${p.id===sel?" selected":""}>${esc(p.name)}${typeof p.lat==="number"?"":" (위치 미기록)"}</option>`).join("");
   host.innerHTML=`<div class="distrow">
       <select id="distA">${opts(a0)}</select><span>에서</span>
       <select id="distB">${opts(b0)}</select><span>까지</span>
@@ -975,6 +978,10 @@ function initDistance(box, site, d){
 
   function drawMap(){
     if(!mapHost) return;
+    if(!pts.length){
+      mapHost.innerHTML=`<img src="${MP.src}" alt="항공사진" style="display:block;width:100%">`;
+      return;
+    }
     const ia=pts.findIndex(p=>p.id===A.value), ib=pts.findIndex(p=>p.id===B.value);
     const g=[`<svg viewBox="0 0 ${MP.w} ${MP.h}" width="100%" id="mapSvg" style="display:block;touch-action:manipulation">
       <image href="${MP.src}" x="0" y="0" width="${MP.w}" height="${MP.h}"/>`];
@@ -1035,7 +1042,12 @@ function initDistance(box, site, d){
   function calc(){
     d.distA=A.value; d.distB=B.value;
     const p=pts.find(x=>x.id===A.value), q=pts.find(x=>x.id===B.value);
-    if(!p||!q||A.value===B.value){ d.dist="같은 지점입니다"; }
+    const nameOf=id=>(all.find(x=>x.id===id)||{}).name||"";
+    if(A.value===B.value){ d.dist="같은 지점입니다"; }
+    else if(!p||!q){
+      const miss=[!p?nameOf(A.value):null,!q?nameOf(B.value):null].filter(Boolean).join(", ");
+      d.dist=`${miss}의 위치가 아직 기록되지 않았습니다. 그 지점의 '장소'에서 현재 위치를 먼저 기록하세요.`;
+    }
     else{
       const m=haversine(p,q), err=Math.round(p.acc+q.acc);
       d.dist=`${p.name} → ${q.name} : 약 ${Math.round(m)} m (위치 오차 ±${err}m)`;
