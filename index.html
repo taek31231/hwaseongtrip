@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#24302e">
+<title>화성지질공원 야외지질 기록장</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="지질기록장">
+<meta name="description" content="공룡알 화석지와 우음도 답사를 기록하는 야외 기록장">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#edf0ec; --card:#ffffff; --ink:#15211f; --muted:#5b6a66;
+  --line:#ccd3cd; --soft:#e4e9e4;
+  --home:#2f4a44; --home-soft:#e3ebe8;
+  --accentA:#9b3a22; --accentA-soft:#f6e7e2;
+  --accentB:#3b5a62; --accentB-soft:#e2ecee;
+  --accent:var(--home); --accent-soft:var(--home-soft);
+  --warn:#8a3b12; --warn-soft:#fbeadf;
+  --focus:#1f6f7a;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#131917; --card:#1c2422; --ink:#e9efec; --muted:#9bada8;
+    --line:#32403c; --soft:#222c29;
+    --home:#8fb6ac; --home-soft:#1e2a27;
+    --accentA:#e08a6e; --accentA-soft:#33211c;
+    --accentB:#8fbcc6; --accentB-soft:#1b2a2e;
+    --warn:#e8a079; --warn-soft:#32211a;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131917; --card:#1c2422; --ink:#e9efec; --muted:#9bada8;
+  --line:#32403c; --soft:#222c29;
+  --home:#8fb6ac; --home-soft:#1e2a27;
+  --accentA:#e08a6e; --accentA-soft:#33211c;
+  --accentB:#8fbcc6; --accentB-soft:#1b2a2e;
+  --warn:#e8a079; --warn-soft:#32211a;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+button,input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.wrap{max-width:720px;margin:0 auto;padding:14px 14px 118px}
+
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.topbar .inner{max-width:720px;margin:0 auto;padding:10px 14px 0}
+.brand{font-size:17px;font-weight:800;letter-spacing:-.02em;margin:0 0 9px}
+.maintabs{display:flex;gap:6px}
+.maintabs button{flex:1;border:1px solid var(--line);background:var(--card);border-bottom:0;
+  border-radius:11px 11px 0 0;padding:10px 6px;font-weight:750;font-size:14.5px;cursor:pointer}
+.maintabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.sitetabs{display:flex;gap:6px;overflow-x:auto;padding:11px 14px;margin:0 -14px 2px;scrollbar-width:none}
+.sitetabs::-webkit-scrollbar{display:none}
+.sitetabs button{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;
+  padding:8px 14px;font-size:14px;font-weight:650;cursor:pointer;display:flex;align-items:center;gap:7px}
+.sitetabs button[aria-selected="true"]{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:780}
+.sitetabs .d{width:7px;height:7px;border-radius:50%;background:var(--line)}
+.sitetabs button.done .d{background:var(--accent)}
+.sitetabs button[aria-selected="true"] .d{background:#ffffff99}
+.sitetabs button.done[aria-selected="true"] .d{background:#fff}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:14px}
+.panel > h2{margin:0;padding:13px 15px;font-size:15px;font-weight:800;border-bottom:1px solid var(--line)}
+.panel .body{padding:14px 15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+label.f{display:block;font-size:13px;font-weight:700;color:var(--muted);margin-bottom:5px}
+input[type=text],input[type=date],textarea{width:100%;background:var(--bg);color:var(--ink);
+  border:1px solid var(--line);border-radius:9px;padding:10px 11px}
+textarea{min-height:92px;resize:vertical;overflow:hidden}
+input:focus,textarea:focus{border-color:var(--focus);outline:none;
+  box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 22%,transparent)}
+.hint{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+
+.sitehead{margin:4px 0 0}
+.headrow{display:flex;align-items:center;gap:12px}
+.cover{flex:none;width:92px;height:66px;padding:0;border:1px solid var(--line);border-radius:10px;
+  overflow:hidden;background:var(--soft);cursor:zoom-in}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.sitehead h2{margin:0;font-size:22px;font-weight:820;letter-spacing:-.02em}
+.sitehead p{margin:7px 0 0;font-size:14.5px;color:var(--muted)}
+.keyq{margin:14px 0 0;padding:14px 15px;border-radius:12px;background:var(--accent-soft);border-left:4px solid var(--accent)}
+.keyq span{display:block;font-size:12px;font-weight:800;color:var(--accent);margin-bottom:5px}
+.keyq p{margin:0;font-size:17px;font-weight:750;line-height:1.45}
+.safety{margin:11px 0 0;padding:11px 13px;border-radius:11px;background:var(--warn-soft);color:var(--warn);font-size:13.5px;font-weight:650}
+.doing{margin:11px 0 0;padding:11px 13px;border-radius:11px;background:var(--soft);font-size:14px}
+.doing b{display:block;font-size:12px;color:var(--muted);margin-bottom:3px;font-weight:800}
+
+.step{margin-top:20px}
+.step > h3{margin:0 0 10px;font-size:15px;font-weight:800;display:flex;align-items:center;gap:9px}
+.step > h3 em{flex:none;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--card);
+  font-style:normal;font-size:12px;font-weight:800;display:grid;place-items:center}
+.ask{margin:16px 0 6px;font-size:14.5px;font-weight:700;line-height:1.45}
+.ask.first{margin-top:0}
+
+.gpsrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 13px;font-weight:700;font-size:14px;cursor:pointer}
+.btn.solid{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:disabled{opacity:.55;cursor:default}
+.gpsval{font-size:13px;color:var(--muted)}
+
+.slot{margin-top:11px;border:1px dashed var(--line);border-radius:12px;padding:12px}
+.slot header{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px}
+.slot header strong{font-size:14.5px}
+.slot header small{font-size:12px;color:var(--muted);font-weight:650}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}
+.thumb{position:relative;aspect-ratio:4/3;border-radius:9px;overflow:hidden;background:var(--soft)}
+.thumb img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;display:block}
+.thumb button{position:absolute;right:4px;top:4px;width:27px;height:27px;border:0;border-radius:50%;
+  background:#000a;color:#fff;font-weight:800;cursor:pointer;line-height:1}
+
+.sketchwrap{margin-top:9px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow:hidden}
+.sketchwrap canvas{display:block;width:100%;height:auto;touch-action:none;background:#fff}
+.sketchbar{display:flex;gap:7px;padding:8px;border-top:1px solid var(--line);background:var(--card)}
+.sketchbar .btn{padding:7px 11px;font-size:13px}
+
+.thumb .pen{right:auto;left:4px;background:#000a;font-size:15px}
+.figrow{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px}
+.refimg{display:flex;align-items:center;gap:9px;padding:6px 10px 6px 6px;background:var(--bg);
+  border:1px solid var(--line);border-radius:11px;cursor:zoom-in;text-align:left;max-width:100%}
+.refimg img{flex:none;width:68px;height:50px;object-fit:cover;border-radius:7px;display:block}
+.refimg span{font-size:12.5px;color:var(--muted);line-height:1.35}
+.distbox select{background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px 10px;font-weight:650}
+.distrow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:14px}
+.model{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--card)}
+.flowbtns{display:flex;gap:7px;margin-top:9px}
+.flowbtns .btn{flex:1}
+.modelout{margin:9px 0 0;font-size:13.5px;font-weight:650;color:var(--muted)}
+.modal.annot{padding:0;align-items:stretch;justify-content:stretch}
+.annotbox{display:flex;flex-direction:column;width:100%;height:100%;
+  padding:calc(10px + env(safe-area-inset-top,0px)) 10px calc(10px + env(safe-area-inset-bottom,0px))}
+.annotbox canvas{flex:1;min-height:0;width:100%;object-fit:contain;touch-action:none;background:#000}
+.annottop{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-bottom:9px}
+.modes{display:flex;gap:6px}
+.modes .btn{background:var(--card);padding:8px 14px}
+.modes .btn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.count{color:#fff;font-size:14px;font-weight:700}
+.annotbar{display:flex;gap:7px;padding-top:10px}
+.annotbar .btn{flex:1;background:var(--card)}
+.navrow{display:flex;gap:8px;margin-top:24px}
+.navrow .btn{flex:1}
+
+.toolbar{position:fixed;z-index:30;left:50%;transform:translateX(-50%);
+  bottom:calc(10px + env(safe-area-inset-bottom,0px));width:min(692px,calc(100% - 20px));
+  display:flex;gap:7px;padding:8px;background:color-mix(in srgb,var(--card) 92%,transparent);
+  backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 26px #0000001f}
+.toolbar .btn{flex:1;padding:11px 6px;font-size:13.5px;text-align:center}
+.savenote{position:fixed;left:50%;transform:translateX(-50%);
+  bottom:calc(72px + env(safe-area-inset-bottom,0px));z-index:29;
+  background:var(--ink);color:var(--card);font-size:13px;padding:7px 14px;border-radius:999px;
+  opacity:0;transition:opacity .25s;pointer-events:none}
+.savenote.show{opacity:.92}
+
+.modal{position:fixed;inset:0;z-index:50;display:none;align-items:center;justify-content:center;background:#000000d6;padding:16px}
+.modal.open{display:flex}
+.sheet{background:var(--card);border-radius:16px;max-width:460px;width:100%;max-height:86vh;overflow:auto;padding:20px}
+.sheet h2{margin:0 0 12px;font-size:18px}
+.sheet ul{margin:0 0 16px;padding-left:19px;font-size:14.5px}
+.sheet li{margin-bottom:8px}
+.sheet .btn{width:100%}
+#photoModal img{max-width:96vw;max-height:88vh;border-radius:10px;display:block}
+#photoModal .close{position:fixed;top:14px;right:14px;width:44px;height:44px;border:0;border-radius:50%;background:#fff;color:#111;font-size:26px;cursor:pointer}
+.foot{margin-top:20px;text-align:center;font-size:12.5px;color:var(--muted)}
+
+#report{display:none}
+@media print{
+  :root{--bg:#fff;--card:#fff;--ink:#000;--muted:#333;--line:#999;--soft:#fff;--accent:#000;--accent-soft:#fff}
+  html,body{background:#fff}
+  .topbar,.toolbar,.wrap,.modal,.savenote{display:none !important}
+  #report{display:block}
+  @page{size:A4;margin:14mm}
+}
+#report{color:#000;font-size:11.5pt;line-height:1.5}
+#report h1{font-size:19pt;margin:0 0 4pt}
+#report .meta{font-size:10.5pt;color:#333;margin-bottom:12pt;padding-bottom:8pt;border-bottom:1.5pt solid #000}
+#report .course{font-size:14pt;margin:14pt 0 8pt;padding-bottom:3pt;border-bottom:1pt solid #000}
+#report section{break-inside:avoid;page-break-inside:avoid;margin-bottom:13pt;padding-bottom:9pt;border-bottom:.5pt solid #bbb}
+#report h2{font-size:13pt;margin:0 0 6pt}
+#report h2 small{font-weight:400;font-size:9.5pt;color:#444;margin-left:6pt}
+#report .q{font-size:11pt;font-style:italic;margin:0 0 7pt}
+#report .row{margin:0 0 6pt}
+#report .row b{display:block;font-size:9.5pt;color:#333}
+#report .row div{white-space:pre-wrap}
+#report .imgs{display:flex;flex-wrap:wrap;gap:6pt;margin-top:6pt}
+#report figure{margin:0;width:31%}
+#report figure img{width:100%;border:.5pt solid #999}
+#report figcaption{font-size:8.5pt;color:#333;margin-top:2pt}
+#report .sk{width:62%;margin-top:6pt}
+#report .sk img{width:100%;border:.5pt solid #999}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="inner">
+    <p class="brand">화성지질공원 야외지질 기록장</p>
+    <div class="maintabs" id="maintabs" role="tablist"></div>
+  </div>
+</header>
+
+<main class="wrap" id="view"></main>
+
+<div class="toolbar">
+  <button class="btn" id="btnBackup">백업 저장</button>
+  <button class="btn" id="btnRestore">백업 불러오기</button>
+  <button class="btn solid" id="btnReport">보고서 만들기</button>
+</div>
+<input type="file" id="restoreFile" accept="application/json" hidden>
+<div class="savenote" id="savenote"></div>
+
+<div class="modal" id="safetyModal" role="dialog" aria-modal="true" aria-labelledby="safetyTitle">
+  <div class="sheet">
+    <h2 id="safetyTitle">안전 수칙</h2>
+    <ul>
+      <li>무너진 절벽 아래에는 머무르지 않고, 충분히 떨어져서 관찰합니다.</li>
+      <li>바위에 올라가지 않습니다. 표면이 울퉁불퉁하니 뛰지 말고, 앉을 자리를 먼저 확인합니다.</li>
+      <li>풀숲에 뱀과 벌이 있을 수 있습니다. 풀이 우거진 곳에 손을 넣지 않습니다.</li>
+      <li>탐방로 밖으로 내려설 때는 인솔 교사의 안내를 따릅니다.</li>
+      <li>비 온 뒤에는 땅이 젖어 미끄럽습니다. 발밑을 보며 걷습니다.</li>
+      <li>물과 모자를 챙기고, 일행과 떨어지지 않습니다.</li>
+    </ul>
+    <button class="btn solid" id="safetyOk">확인했습니다</button>
+  </div>
+</div>
+
+<div class="modal" id="photoModal" role="dialog" aria-modal="true" aria-label="사진 크게 보기">
+  <button class="close" id="photoClose" aria-label="닫기">×</button>
+  <img id="photoBig" alt="확대한 현장 사진">
+</div>
+
+<div id="report"></div>
+
+<script>
+/* =====================================================================
+   답사 설정 — 다른 답사에 쓰려면 이 TRAIL만 교체하면 됩니다.
+   site: {id,name,intro,keyq,photos,sketch,interps[],doing,safety}
+   tutorial: {kind:"tutorial", blocks:[{id,label,photo}]}
+   ===================================================================== */
+const TRAIL = {
+  id:"hwaseong", title:"화성지질공원",
+  // 공룡알 화석지 항공사진 + 좌표 변환식 (기준점 4곳으로 맞춤, 1픽셀 ≈ 1.6m)
+  map:{ w:956, h:532,
+    lat:[-5.045476347631378e-8, -1.4524394115492112e-5, 37.26355565300682],
+    lon:[ 1.8041537968693144e-5,  5.658544488529316e-8, 126.74369047776034],
+    src:"assets/img/fig-hwaseong.webp" },
+  courses:[
+  {
+    id:"fossil", name:"공룡알 화석지", accent:"A",
+    sites:[
+      {
+        id:"f0", name:"튜토리얼", kind:"tutorial",
+        intro:"방문자센터 앞 광장에서 시작합니다. 관찰에 앞서 이 땅이 어떤 곳인지부터 확인합니다.",
+        cover:"assets/img/cover-f0.webp",
+        keyq:"지금 우리는 어디에 서 있을까?",
+        blocks:[
+          {
+            id:"b0", label:"시화호의 변화",
+            note:"같은 곳을 하늘에서 찍은 1985년과 2020년 사진입니다. 두 장을 번갈아 보며 무엇이 달라졌는지 찾아봅시다.",
+            figures:[{src:"assets/img/fig-b0.webp", caption:"1985년"},{src:"assets/img/fig.webp", caption:"2020년"}],
+            asks:[
+              {id:"q1", label:"두 사진에서 달라진 곳을 찾아 적으세요."},
+              {id:"q2", label:"지금 우리가 서 있는 자리는 1985년 사진에서 어디쯤이고, 그때는 무엇이었을까요?"}
+            ]
+          },
+          {id:"b1", label:"방위 정하기", photo:"방위를 알 수 있는 사진"},
+          {id:"b3", label:"식물 관찰", photo:"식물 사진"},
+          {id:"b4", label:"동물 흔적 관찰", photo:"흔적 사진"},
+          {
+            id:"b2", label:"코리아케라톱스 화성엔시스",
+            note:"2008년 전곡항 방조제 주변을 정리하던 화성시청 공무원이 발견했고, 2년에 걸친 연구 끝에 한반도에서 처음 확인된 뿔공룡(각룡류)으로 학계에 보고되었습니다. 엉덩이뼈부터 꼬리뼈, 아래 다리뼈와 발뼈까지 제자리에 남은 상태로 발견되었습니다.",
+            figures:[
+              {src:"assets/img/fig-b2.webp", caption:"발견된 골격 화석"},
+              {src:"assets/img/fig-2.webp", caption:"복원도"},
+              {src:"assets/img/fig-3.webp", caption:"화성시 마스코트 코리요"}
+            ],
+            asks:[
+              {id:"q1", label:"화석에서 남아 있는 부위는 몸의 어디인가요? 없는 부위는 어디인가요?"},
+              {id:"q2", label:"우리가 아는 공룡 중 어떤 무리에 속할까요? 닮은 점을 찾아 쓰세요."}
+            ],
+            photo:"화석 사진"
+          }
+        ]
+      },
+      {
+        id:"f1", name:"상한염",
+        intro:"탐방로를 따라 들어가면 왼쪽에 보이는 동산입니다. 바위 한쪽이 무너져 내려 있습니다.",
+        cover:"assets/img/cover-f1.webp",
+        keyq:"이 지층의 알갱이들은 무엇이 옮겨다 쌓았을까?",
+        safety:"무너져 내린 절벽입니다. 아래에 머무르지 않고 떨어져서 관찰합니다.",
+        doing:"이암·사암·역암 표본을 받아, 떨어져 나온 돌들과 하나씩 맞춰 봅시다. 내가 생각한 \'자갈\'의 크기를 먼저 말해 보고 2mm 기준과도 비교해 봅시다.",
+        photos:["전경","노두","근접"],
+        interps:[
+          {id:"i0", label:"떨어져 나온 돌들을 표본과 맞춰 보세요. 각각 어떤 암석이고, 무엇을 보고 그렇게 정했나요?"},
+          {id:"i1", label:"층마다 알갱이의 크기가 다릅니다. 각 층이 쌓일 때 물의 속도는 어떠했을까요?"},
+          {id:"i2", label:"생물이 남긴 흔적을 찾아보세요. 어떤 생물이 무엇을 하며 남긴 자국일까요?"},
+          {id:"i3", label:"남은 의문"}
+        ]
+      },
+      {
+        id:"f2", name:"중한염",
+        intro:"상한염 건너편의 동산입니다. 여러 곳에서 공룡알 화석을 볼 수 있습니다.",
+        cover:"assets/img/cover-f2.webp",
+        keyq:"상한염과 중한염, 어느 쪽 지층이 먼저 쌓였을까?",
+        doing:"상한염에서 본 이암·사암·역암 표본을 다시 꺼내, 이곳 지층을 이루는 암석과 맞춰 봅시다.",
+        photos:["전경","노두","근접"],
+        interps:[
+          {id:"i1", label:"이 지층을 이루는 암석을 표본과 맞춰 보고, 아래에서 위로 어떤 암석이 차례로 쌓여 있는지 설명해 보세요."},
+          {id:"i15", label:"조금 전에 본 상한염과 이곳 중한염 중 어느 쪽 지층이 더 오래되었을까요? 두 곳의 지층이 놓인 높이와 기울기를 떠올려 근거와 함께 쓰세요."},
+          {id:"i2", label:"바위 표면에 벌집처럼 파인 구멍(타포니)이 있습니다. 어떻게 만들어졌을까요? 시간이 더 지나면 이 구멍과 바위는 어떻게 될까요?"},
+          {id:"i3", label:"여기 놓인 공룡알은 복제품입니다. 원본은 아래 사진처럼 떼어 내어 전시실에 옮겨져 있습니다. 화석을 발견된 자리에 그대로 두는 것과 옮겨 보관하는 것 중 어느 쪽이 나을지, 내 입장과 근거를 쓰세요.",
+           figure:{src:"assets/img/fig-i3.webp", caption:"대전 천연기념물센터에 전시된 화성 고정리 공룡알 화석(천연기념물 제414호)"}},
+          {id:"i4", label:"남은 의문"}
+        ]
+      },
+      {
+        id:"f3", name:"둥지바위",
+        intro:"중한염과 하한염 사이의 둥근 바위입니다. 공룡알 화석을 가장 많이 볼 수 있습니다.",
+        cover:"assets/img/cover-f3.webp",
+        keyq:"공룡은 왜 하필 이곳을 골라 알을 낳았을까?",
+        safety:"천연기념물입니다. 화석과 암석을 만지거나 올라가지 않습니다.",
+        doing:"사진을 찍은 뒤 연필 버튼을 눌러, 보이는 공룡알을 하나씩 톡톡 눌러 세어 봅시다. 잘못 찍은 번호는 다시 누르면 지워집니다.",
+        photos:["전경","노두","근접"],
+        interps:[
+          {id:"i1", label:"사진에 표시한 공룡알은 모두 몇 개인가요? 크기와 놓인 모양도 함께 적으세요."},
+          {id:"i2", label:"공룡알이 놓인 층의 암석은 어떤 암석인가요? 공룡은 왜 이런 곳을 골라 알을 낳았을까요?"},
+          {id:"i3", label:"공룡알이 주변 암석보다 도드라져 보입니다. 왜 그럴까요?"},
+          {id:"i4", label:"생물이 남긴 흔적을 찾아보세요. 무엇이 어떻게 남은 자국일까요?"},
+          {id:"i5", label:"남은 의문"}
+        ]
+      },
+      {
+        id:"f4", name:"도랑바위",
+        intro:"둥지바위에서 동굴바위로 이어지는 길 남동쪽의 큰 바위 덩어리입니다. 탐방로에서 내려가 좌우로 돌아가면 더 자세히 보입니다.",
+        cover:"assets/img/cover-f4.webp",
+        keyq:"퇴적물은 수평으로 쌓이는데, 왜 여기만 경계가 휘어 있을까?",
+        photos:["전경","노두","근접"],
+        sketch:true,
+        model:"imbrication",
+        modelAsk:{id:"i2", label:"모형에서 고른 방향과 실제 바위가 어떤 점에서 같아 보였는지 한 줄로 적으세요."},
+        interps:[
+          {id:"i0", label:"경계선을 사이에 두고 위와 아래의 색과 알갱이 크기를 비교하세요. 각각 어떤 암석이고, 왜 이렇게 다를까요?"},
+          {id:"i1", label:"휘어진 경계는 무엇이 남긴 자국일까요? 이곳은 과거에 어떤 곳이었을까요?"},
+          {id:"i25", label:"바위를 왼쪽과 오른쪽으로 돌아가 보세요. 같은 자국이 몇 군데 보이나요?"},
+          {id:"i3", label:"남은 의문"}
+        ]
+      },
+      {
+        id:"f5", name:"동굴바위",
+        intro:"하한염으로 이어지는 길에 있는 바위입니다. 윗부분에 작은 동굴이 있습니다.",
+        cover:"assets/img/cover-f5.webp",
+        keyq:"왜 이 바위에만 동굴이 파였을까?",
+        doing:"이암·사암·역암 표본을 서로 부딪혀 보며, 어느 암석이 먼저 부스러지는지 확인해 봅시다.",
+        photos:["전경","노두","근접"],
+        interps:[
+          {id:"i1", label:"공룡알 화석을 찾아보세요. 어디에, 어떤 모습으로 남아 있나요?"},
+          {id:"i2", label:"어떤 부분은 튀어나오고 어떤 부분은 움푹 패였습니다. 표본을 부딪혀 본 결과와 연결해 왜 이렇게 달라졌는지 쓰세요."},
+          {id:"i25", label:"시화방조제가 생기기 전 이곳까지 바닷물이 드나들었습니다. 그 사실을 떠올리면 이 동굴은 어떻게 생긴 것일까요? 바닷물은 어느 높이까지 닿았을까요?"},
+          {id:"i26", label:"왼쪽 기둥은 이미 무너졌습니다. 남은 기둥과 이 동굴은 앞으로 어떻게 될까요?",
+           figures:[{src:"assets/img/fig-i26.webp", caption:"기둥이 서 있을 때"},{src:"assets/img/fig-4.webp", caption:"기둥이 무너진 뒤"}]},
+          {id:"i3", label:"남은 의문"}
+        ]
+      },
+      {
+        id:"f6", name:"잘린바위",
+        intro:"하한염 서쪽, 커다란 바위가 여러 덩어리로 나뉘어 있습니다.",
+        cover:"assets/img/cover-f6.webp",
+        keyq:"이 바위를 세 덩어리로 나눈 틈은 어느 방향의 힘이 만들었을까?",
+        doing:"스펀지 모형을 당겨 보고 밀어 보며, 실제 바위가 어느 쪽과 닮았는지 비교해 봅시다.",
+        photos:["전경","노두","근접"],
+        sketch:true,
+        model:"fault",
+        interps:[
+          {id:"i1", label:"틈을 사이에 두고 같은 층이 어긋나 있습니다. 어느 쪽이 올라갔나요?"},
+          {id:"i2", label:"그 어긋남을 만들려면 어느 방향에서 힘이 작용해야 할까요? 정단층과 역단층 중 무엇이라고 판단했는지 근거와 함께 쓰세요."},
+          {id:"i3", label:"남은 의문"}
+        ]
+      },
+      {
+        id:"f7", name:"알바위",
+        intro:"탐방로 가장 끝에 있는 바위입니다.",
+        cover:"assets/img/cover-f7.webp",
+        keyq:"공룡이 살던 시절, 이곳은 어떤 지역이었을까?",
+        photos:["전경","노두","근접"],
+        tool:"distance",
+        interps:[
+          {id:"i1", label:"공룡알 화석은 어디에, 어떤 모습으로 남아 있나요? 둥지바위에서 본 것과 비교해 보세요."},
+          {id:"i2", label:"오늘 본 암석과 화석을 모두 떠올려, 공룡이 살던 시절 이곳의 풍경을 한 장면으로 그리듯 써 보세요. 물은 어떤 모습이었고, 땅은 어떠했으며, 어떤 생물이 있었을까요?"},
+          {id:"i35", label:"아래 거리 재기로 둥지바위와 알바위 사이의 거리를 구했습니다. 지층이 약 30° 기울어져 있다면 두 지점 사이에 쌓인 퇴적층의 두께는 얼마일까요? 1년에 약 5mm씩 쌓였다면, 공룡은 이 일대에 몇 년에 걸쳐 알을 낳은 셈일까요?"},
+          {id:"i4", label:"남은 의문"}
+        ]
+      }
+    ]
+  },
+  {
+    id:"wueumdo", name:"우음도", accent:"B",
+    sites:[
+      {
+        id:"w0", name:"튜토리얼", kind:"tutorial",
+        intro:"원두막 쉼터 앞에서 시작합니다. 본격적인 관찰에 앞서, 오늘 쓸 도구인 암석과 광물부터 손에 익힙니다.",
+        cover:"assets/img/cover-w0.webp",
+        keyq:"겉보기에 비슷한 두 광물을 우리는 어떻게 구분할 수 있을까?",
+        blocks:[
+          {id:"b1", label:"이름의 유래", photo:"지금 보이는 풍경"},
+          {
+            id:"b2", label:"화강암을 이루는 광물",
+            note:"여기 바위에는 변성암 사이를 뚫고 들어온 밝은 화강암 줄기가 있습니다. 이 화강암을 이루는 석영·장석·흑운모 표본을 하나씩 만져 보며 특징을 찾아봅시다.",
+            asks:[
+              {id:"q1", label:"세 광물의 색과 반짝이는 모양, 깨진 면의 생김새는 서로 어떻게 다른가요?"},
+              {id:"q2", label:"바위에서 이 세 광물을 각각 찾아보세요. 어디에서 어떤 모습으로 보이나요?"}
+            ],
+            photo:"광물 표본 사진"
+          },
+          {
+            id:"b3", label:"석영과 방해석 구분하기",
+            note:"두 광물은 색이 비슷해 눈으로만 보아서는 헷갈립니다. 어떻게 하면 둘을 가려낼 수 있을지 먼저 방법을 생각해 보고, 직접 해 봅시다.",
+            asks:[
+              {id:"q1", label:"두 표본은 겉보기에 어떤 점이 비슷한가요?"},
+              {id:"q2", label:"둘을 구분할 방법으로 무엇이 떠오르나요? 생각나는 대로 적어 보세요."},
+              {id:"q3", label:"실제로 해 본 방법과 그 결과를 적으세요."}
+            ],
+            photo:"비교 실험 사진"
+          }
+        ]
+      },
+      {
+        id:"w1", name:"구부러진 바위",
+        intro:"우음도 지질명소로 들어서면 원두막 쉼터 앞에 나지막하게 놓인 바위입니다. 교과서에도 실려 있습니다.",
+        cover:"assets/img/cover-w1.webp",
+        keyq:"이 줄무늬는 퇴적암의 층리와 같은 것일까?",
+        photos:["전경","노두","근접"],
+        sketch:true,
+        interps:[
+          {id:"i1", label:"줄무늬는 어떻게 만들어졌을까요? 퇴적암의 층리와 비교해 보세요."},
+          {id:"i2", label:"줄무늬가 휘어 있습니다. 이 바위는 어떤 일을 겪었을까요?"},
+          {id:"i3", label:"남은 의문"}
+        ]
+      },
+      {
+        id:"w2", name:"흰 띠 바위",
+        intro:"원두막 쉼터 앞 언덕의 바위입니다. 여기서 확인한 것은 다음 지점에서도 씁니다.",
+        cover:"assets/img/cover-w2.webp",
+        keyq:"휘어짐·끊어짐·끼어듦 중 가장 나중에 일어난 일은 무엇일까?",
+        safety:"바위 표면이 울퉁불퉁합니다. 앉을 자리와 이동 동선을 먼저 확인합니다.",
+        photos:["전경","노두","근접"],
+        sketch:true,
+        interps:[
+          {id:"i1", label:"서로 다른 두 암석이 맞닿아 있습니다. 색, 광물의 크기, 구조는 어떻게 다른가요?"},
+          {id:"i2", label:"휘어짐, 끊어짐, 끼어듦 중 가장 나중에 일어난 일은 무엇일까요? 그렇게 판단한 근거를 쓰세요."},
+          {id:"i3", label:"남은 의문"}
+        ]
+      },
+      {
+        id:"w3", name:"자르고 잘린 바위",
+        intro:"언덕에 오르면 우음도 지질명소가 한눈에 들어옵니다. 멀리서 전체를 본 뒤 가까이 가서 봅시다.",
+        cover:"assets/img/cover-w3.webp",
+        keyq:"서로 맞닿은 암석들 중 가장 나중에 만들어진 것은 무엇일까?",
+        photos:["전경","노두","근접"],
+        sketch:true,
+        interps:[
+          {id:"i1", label:"보이는 암석을 종류별로 나누어 보세요. 무엇을 기준으로 나누었나요?"},
+          {id:"i2", label:"흰 띠 바위에서 확인한 관계를 떠올려, 여기 암석들 중 가장 나중에 만들어진 것을 고르고 근거를 쓰세요."},
+          {id:"i3", label:"남은 의문"}
+        ]
+      },
+      {
+        id:"w4", name:"뜯긴 바위",
+        intro:"언덕 바위에서 북동쪽으로 조금 떨어진 곳입니다. 밝은 암석과 어두운 암석이 함께 있습니다.",
+        cover:"assets/img/cover-w4.webp",
+        keyq:"밝은 암석과 그 속의 어두운 조각, 어느 쪽이 먼저 있었을까?",
+        doing:"손으로 바위 표면을 쓸어 보며, 도드라져 남은 알갱이를 확인해 봅시다.",
+        photos:["전경","노두","근접"],
+        interps:[
+          {id:"i1", label:"밝은 암석 속에 어두운 조각이 박혀 있습니다. 어느 쪽이 먼저 있었을까요?"},
+          {id:"i2", label:"바위 표면에 도드라져 남은 알갱이는 어떤 광물일까요? 튜토리얼에서 광물을 비교한 결과를 떠올려 쓰세요."},
+          {id:"i3", label:"남은 의문"}
+        ]
+      }
+    ]
+  }
+  ]
+};
+/* ===================================================================== */
+
+const KEY="fieldlog-"+TRAIL.id+"-v4", DB_NAME="FieldLogDB-"+TRAIL.id;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let state={meta:{},sites:{}};
+try{const raw=localStorage.getItem(KEY); if(raw) state=Object.assign(state,JSON.parse(raw));}catch(e){}
+state.meta=state.meta||{}; state.sites=state.sites||{};
+
+function ask(msg, okLabel){
+  return new Promise(res=>{
+    const ov=document.createElement("div"); ov.className="modal open";
+    ov.innerHTML=`<div class="sheet">
+      <p style="margin:0 0 16px;font-size:15.5px;line-height:1.5">${esc(msg)}</p>
+      <div style="display:flex;gap:8px">
+        <button class="btn" data-no style="flex:1">취소</button>
+        <button class="btn solid" data-yes style="flex:1">${esc(okLabel||"확인")}</button>
+      </div></div>`;
+    document.body.appendChild(ov);
+    ov.querySelector("[data-no]").onclick=()=>{ov.remove();res(false);};
+    ov.querySelector("[data-yes]").onclick=()=>{ov.remove();res(true);};
+  });
+}
+function notify(msg){
+  const ov=document.createElement("div"); ov.className="modal open";
+  ov.innerHTML=`<div class="sheet">
+    <p style="margin:0 0 16px;font-size:15.5px;line-height:1.5">${esc(msg)}</p>
+    <button class="btn solid" data-ok style="width:100%">확인</button></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector("[data-ok]").onclick=()=>ov.remove();
+}
+
+let saveTimer=null;
+function save(){
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    try{localStorage.setItem(KEY,JSON.stringify(state)); flash("저장됨");}
+    catch(e){flash("저장 공간이 부족합니다");}
+  },250);
+}
+function flash(m){const n=$("#savenote");n.textContent=m;n.classList.add("show");
+  clearTimeout(n._t);n._t=setTimeout(()=>n.classList.remove("show"),1300);}
+function S(id){return state.sites[id]||(state.sites[id]={});}
+function grow(t){t.style.height="auto";t.style.height=(t.scrollHeight+2)+"px";}
+
+const dbp=new Promise((res,rej)=>{const r=indexedDB.open(DB_NAME,1);
+  r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains("media"))r.result.createObjectStore("media",{keyPath:"id"});};
+  r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error);});
+async function mediaPut(rec){const db=await dbp;return new Promise((res,rej)=>{const t=db.transaction("media","readwrite");t.objectStore("media").put(rec);t.oncomplete=res;t.onerror=()=>rej(t.error);});}
+async function mediaDel(id){const db=await dbp;return new Promise((res,rej)=>{const t=db.transaction("media","readwrite");t.objectStore("media").delete(id);t.oncomplete=res;t.onerror=()=>rej(t.error);});}
+async function mediaAll(){const db=await dbp;return new Promise((res,rej)=>{const r=db.transaction("media").objectStore("media").getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function mediaClear(){const db=await dbp;return new Promise((res,rej)=>{const t=db.transaction("media","readwrite");t.objectStore("media").clear();t.oncomplete=res;t.onerror=()=>rej(t.error);});}
+async function compress(file){
+  const bmp=await createImageBitmap(file); let w=bmp.width,h=bmp.height,max=1500;
+  if(Math.max(w,h)>max){const k=max/Math.max(w,h);w=Math.round(w*k);h=Math.round(h*k);}
+  const c=document.createElement("canvas");c.width=w;c.height=h;
+  c.getContext("2d").drawImage(bmp,0,0,w,h); bmp.close&&bmp.close();
+  return new Promise(r=>c.toBlob(r,"image/jpeg",.78));
+}
+
+let tab="home", siteIdx=0;
+function course(){return TRAIL.courses.find(c=>c.id===tab);}
+function accentOn(){
+  const c=course(), a=!c?"--home":(c.accent==="B"?"--accentB":"--accentA");
+  document.documentElement.style.setProperty("--accent","var("+a+")");
+  document.documentElement.style.setProperty("--accent-soft","var("+a+"-soft)");
+}
+function siteDone(s){
+  const d=state.sites[s.id]; if(!d) return false;
+  return Object.entries(d).some(([k,v])=>k!=="gps"&&k!=="caps"&&k!=="model"&&k!=="flow"&&k!=="dist"&&k!=="distTap"&&k!=="distA"&&k!=="distB"&&typeof v==="string"&&v.trim());
+}
+function buildMainTabs(){
+  const box=$("#maintabs"); box.innerHTML="";
+  [{id:"home",name:"기록장"},...TRAIL.courses.map(c=>({id:c.id,name:c.name}))].forEach(t=>{
+    const b=document.createElement("button");
+    b.type="button"; b.textContent=t.name; b.setAttribute("role","tab");
+    b.setAttribute("aria-selected",t.id===tab);
+    b.onclick=()=>{tab=t.id;siteIdx=0;render();};
+    box.appendChild(b);
+  });
+}
+function render(){
+  accentOn(); buildMainTabs();
+  const v=$("#view"); v.innerHTML="";
+  if(tab==="home") renderHome(v); else renderCourse(v);
+  window.scrollTo({top:0});
+}
+
+function renderHome(v){
+  v.innerHTML=`
+  <section class="panel"><h2>답사자</h2><div class="body">
+    <div class="grid2">
+      <div><label class="f" for="m-name">이름</label><input type="text" id="m-name" data-meta="name" autocomplete="off"></div>
+      <div><label class="f" for="m-class">학번</label><input type="text" id="m-class" data-meta="klass" autocomplete="off"></div>
+      <div><label class="f" for="m-date">답사일</label><input type="date" id="m-date" data-meta="date"></div>
+      <div><label class="f" for="m-weather">날씨</label><input type="text" id="m-weather" data-meta="weather"></div>
+    </div>
+  </div></section>
+  <section class="panel"><h2>진행 상황</h2><div class="body" id="statusBody"></div></section>
+  <p class="foot">기록은 이 기기에만 저장됩니다. 끝나면 보고서를 PDF로 저장하고, 백업 파일도 함께 받아 두세요.</p>`;
+
+  v.querySelectorAll("[data-meta]").forEach(i=>{
+    i.value=state.meta[i.dataset.meta]||"";
+    i.addEventListener("input",()=>{state.meta[i.dataset.meta]=i.value;save();});
+  });
+  if(!state.meta.date){state.meta.date=new Date().toISOString().slice(0,10);$("#m-date").value=state.meta.date;}
+
+  const h=[];
+  TRAIL.courses.forEach(c=>{
+    const done=c.sites.filter(siteDone).length;
+    h.push(`<p style="margin:10px 0 6px;font-size:13.5px;font-weight:700">${esc(c.name)} — ${c.sites.length}곳 중 ${done}곳 작성</p>
+      <div class="sitetabs" style="padding:2px 0;margin:0">`);
+    c.sites.forEach((s,i)=>h.push(`<button type="button" class="${siteDone(s)?"done":""}" data-go="${c.id}" data-i="${i}"><span class="d"></span>${esc(s.name)}</button>`));
+    h.push(`</div>`);
+  });
+  $("#statusBody").innerHTML=h.join("");
+  $("#statusBody").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{tab=b.dataset.go;siteIdx=+b.dataset.i;render();});
+}
+
+function photoSlot(label, si, d, extra){
+  return `<div class="slot">
+    <header><strong>${esc(label)}</strong>${extra?`<small>${esc(extra)}</small>`:""}</header>
+    <button class="btn" type="button" data-shoot="${si}">사진 추가</button>
+    <input type="file" accept="image/*" capture="environment" multiple hidden data-file="${si}">
+    <div class="thumbs" data-thumbs="${si}"></div>
+    <input type="text" data-cap="${si}" placeholder="사진 설명" value="${esc((d.caps||{})[si]||"")}" style="margin-top:8px">
+  </div>`;
+}
+
+function renderCourse(v){
+  const c=course(), site=c.sites[siteIdx], d=S(site.id);
+  const figs=[];
+  const figHTML=f=>{
+    if(!f||!f.src) return "";
+    figs.push(f.src);
+    return `<button type="button" class="refimg" data-fig="${figs.length-1}">
+      <img src="${f.src}" alt="${esc(f.caption||"")}"><span>${esc(f.caption||"")}</span></button>`;
+  };
+  const strip=document.createElement("div"); strip.className="sitetabs"; strip.setAttribute("role","tablist");
+  c.sites.forEach((s,i)=>{
+    const b=document.createElement("button");
+    b.type="button"; b.setAttribute("role","tab"); b.setAttribute("aria-selected",i===siteIdx);
+    if(siteDone(s)) b.classList.add("done");
+    b.innerHTML=`<span class="d"></span>${esc(s.name)}`;
+    b.onclick=()=>{siteIdx=i;render();};
+    strip.appendChild(b);
+  });
+  v.appendChild(strip);
+
+  const box=document.createElement("div"), h=[];
+  h.push(`<div class="sitehead">
+    <div class="headrow">
+      ${site.cover?`<button type="button" class="cover" data-cover="1"><img src="${site.cover}" alt="${esc(site.name)} 전경"></button>`:""}
+      <h2>${esc(site.name)}</h2>
+    </div>
+    <p>${esc(site.intro)}</p></div>`);
+  if(site.keyq) h.push(`<div class="keyq"><span>핵심 질문</span><p>${esc(site.keyq)}</p></div>`);
+  if(site.safety) h.push(`<div class="safety">${esc(site.safety)}</div>`);
+  if(site.doing) h.push(`<div class="doing"><b>현장 활동</b>${esc(site.doing)}</div>`);
+
+  h.push(`<div class="step"><h3><em>1</em>장소</h3><div class="gpsrow">
+    <button class="btn" id="gpsBtn">현재 위치 기록</button>
+    <span class="gpsval" id="gpsVal">${d.gps?esc(d.gps):"아직 기록하지 않음"}</span></div></div>`);
+
+  let n=2;
+  if(site.kind==="tutorial"){
+    site.blocks.forEach((b,bi)=>{
+      h.push(`<div class="step"><h3><em>${n++}</em>${esc(b.label)}</h3>`);
+      if(b.note) h.push(`<div class="doing"><b>알아 두기</b>${esc(b.note)}</div>`);
+      if(b.figures&&b.figures.length) h.push(`<div class="figrow">${b.figures.map(figHTML).join("")}</div>`);
+      if(b.asks){
+        b.asks.forEach((a,ai)=>h.push(`<p class="ask${ai===0?" first":""}" style="${ai===0&&b.note?"margin-top:16px":""}">${esc(a.label)}</p>
+          <textarea data-f="${esc(b.id+"_"+a.id)}">${esc(d[b.id+"_"+a.id]||"")}</textarea>`));
+      }else{
+        h.push(`<textarea data-f="${esc(b.id)}">${esc(d[b.id]||"")}</textarea>`);
+      }
+      h.push(`${b.photo?photoSlot(b.photo, bi, d):""}</div>`);
+    });
+  }else{
+    h.push(`<div class="step"><h3><em>${n++}</em>관찰</h3>
+      <textarea data-f="obs">${esc(d.obs||"")}</textarea>`);
+    (site.photos||[]).forEach((slot,si)=>h.push(photoSlot(slot, si, d, /근접/.test(slot)?"크기 기준 함께 담기":"")));
+    h.push(`</div>`);
+
+    if(site.sketch){
+      h.push(`<div class="step"><h3><em>${n++}</em>스케치</h3>
+        <div class="sketchwrap"><canvas id="sk" width="900" height="600"></canvas>
+        <div class="sketchbar">
+          <button class="btn" type="button" data-sk="undo">한 획 지우기</button>
+          <button class="btn" type="button" data-sk="clear">전체 지우기</button>
+          <button class="btn solid" type="button" data-sk="save">그림 저장</button>
+        </div></div></div>`);
+    }
+
+    if(site.tool==="distance"){
+      h.push(`<div class="step"><h3><em>${n++}</em>거리 재기</h3>
+        <p class="hint" style="margin-bottom:9px">각 지점에서 기록한 위치가 항공사진 위에 표시됩니다. 아래에서 두 지점을 고르면 거리가 나오고, 사진을 직접 두 번 눌러 잰 거리도 볼 수 있습니다.</p>
+        <div class="model" id="distMap"></div>
+        <div class="distbox" id="distBox"></div>
+        <p class="modelout" id="distOut">${esc(d.dist||"두 지점을 고르세요")}</p>
+        <p class="modelout" id="tapOut">${esc(d.distTap||"")}</p></div>`);
+    }
+    if(site.model==="imbrication"){
+      h.push(`<div class="step"><h3><em>${n++}</em>물의 흐름 모형</h3>
+        <p class="hint" style="margin-bottom:9px">물이 흐르는 방향을 바꿔 가며, 자갈이 눕는 모습이 눈앞의 바위와 같아지는 쪽을 찾아보세요.</p>
+        <div class="model" id="flowModel"></div>
+        <div class="flowbtns">
+          <button class="btn" data-flow="-1">← 왼쪽으로 흐르게</button>
+          <button class="btn" data-flow="1">오른쪽으로 흐르게 →</button>
+        </div>
+        <p class="modelout" id="flowOut">${esc(d.flow||"아직 고르지 않음")}</p>
+        ${site.modelAsk?`<p class="ask">${esc(site.modelAsk.label)}</p>
+          <textarea data-f="${esc(site.modelAsk.id)}">${esc(d[site.modelAsk.id]||"")}</textarea>`:""}
+        </div>`);
+    }
+    if(site.model==="fault"){
+      h.push(`<div class="step"><h3><em>${n++}</em>모형 맞추기</h3>
+        <p class="hint" style="margin-bottom:9px">양쪽 바깥 덩어리를 각각 끌어, 눈앞의 바위와 같은 모습이 되도록 맞춰 보세요. 가운데 덩어리는 고정되어 있습니다.</p>
+        <div class="model" id="faultModel"></div>
+        <p class="modelout" id="faultOut">${esc(d.model||"아직 맞추지 않음")}</p></div>`);
+    }
+    h.push(`<div class="step"><h3><em>${n++}</em>해석</h3>`);
+    (site.interps||[]).forEach((it,ii)=>{
+      h.push(`<p class="ask${ii===0?" first":""}">${esc(it.label)}</p>`);
+      const fl=it.figures||(it.figure?[it.figure]:[]);
+      if(fl.length) h.push(`<div class="figrow">${fl.map(figHTML).join("")}</div>`);
+      h.push(`<textarea data-f="${esc(it.id)}">${esc(d[it.id]||"")}</textarea>`);
+    });
+    h.push(`</div>`);
+  }
+
+  h.push(`<div class="navrow">
+    ${siteIdx>0?`<button class="btn" id="prevBtn">← ${esc(c.sites[siteIdx-1].name)}</button>`:""}
+    ${siteIdx<c.sites.length-1?`<button class="btn" id="nextBtn">${esc(c.sites[siteIdx+1].name)} →</button>`:""}
+  </div>`);
+  box.innerHTML=h.join("");
+  v.appendChild(box);
+
+  box.querySelectorAll("textarea").forEach(t=>{
+    grow(t);
+    t.addEventListener("input",()=>{grow(t);d[t.dataset.f]=t.value;save();
+      strip.children[siteIdx].classList.toggle("done",siteDone(site));});
+  });
+  box.querySelectorAll("[data-cap]").forEach(i=>{
+    i.addEventListener("input",()=>{d.caps=d.caps||{};d.caps[i.dataset.cap]=i.value;save();});
+  });
+  box.querySelector("#gpsBtn").onclick=e=>{
+    const btn=e.currentTarget,out=box.querySelector("#gpsVal");
+    if(!navigator.geolocation){out.textContent="이 기기에서는 위치를 쓸 수 없습니다";return;}
+    btn.disabled=true; out.textContent="위치 찾는 중… 시간이 걸릴 수 있습니다";
+    navigator.geolocation.getCurrentPosition(p=>{
+      const t=new Date();
+      d.gps=`${p.coords.latitude.toFixed(5)}, ${p.coords.longitude.toFixed(5)} (±${Math.round(p.coords.accuracy)}m) · ${String(t.getHours()).padStart(2,"0")}:${String(t.getMinutes()).padStart(2,"0")}`;
+      out.textContent=d.gps; btn.disabled=false; save();
+    },err=>{
+      out.textContent=err.code===1?"위치 권한이 꺼져 있습니다":"위치를 찾지 못했습니다. 하늘이 트인 곳에서 다시 시도하세요";
+      btn.disabled=false;
+    },{enableHighAccuracy:true,timeout:30000,maximumAge:60000});
+  };
+  box.querySelectorAll("[data-shoot]").forEach(b=>b.onclick=()=>box.querySelector(`[data-file="${b.dataset.shoot}"]`).click());
+  box.querySelectorAll("[data-file]").forEach(inp=>{
+    inp.addEventListener("change",async e=>{
+      const si=inp.dataset.file; let fail=0;
+      for(const f of [...e.target.files].slice(0,4)){
+        try{
+          if(!f.type.startsWith("image/")){fail++;continue;}
+          const blob=await compress(f);
+          await mediaPut({id:`${site.id}|p${si}|${Date.now()}|${Math.random().toString(36).slice(2,7)}`,site:site.id,slot:si,kind:"photo",blob,t:Date.now()});
+        }catch(err){fail++;}
+      }
+      e.target.value="";
+      await renderThumbs(box,site,si);
+      flash(fail?`사진 ${fail}장은 추가하지 못했습니다`:"사진을 저장했습니다");
+    });
+  });
+  const slotCount = site.kind==="tutorial" ? site.blocks.length : (site.photos||[]).length;
+  for(let si=0; si<slotCount; si++) renderThumbs(box,site,si);
+  if(site.sketch) initSketch(box,site);
+  if(site.model==="fault") initFault(box,site,d);
+  if(site.model==="imbrication") initFlow(box,site,d);
+  if(site.tool==="distance") initDistance(box,site,d);
+  box.querySelectorAll("[data-fig]").forEach(b=>b.onclick=()=>openURL(figs[+b.dataset.fig]));
+  const cb=box.querySelector("[data-cover]");
+  if(cb) cb.onclick=()=>openURL(site.cover);
+  const pb=box.querySelector("#prevBtn"), nb=box.querySelector("#nextBtn");
+  if(pb) pb.onclick=()=>{siteIdx--;render();};
+  if(nb) nb.onclick=()=>{siteIdx++;render();};
+}
+
+async function renderThumbs(box,site,si){
+  const wrap=box.querySelector(`[data-thumbs="${si}"]`); if(!wrap) return;
+  const all=(await mediaAll()).filter(m=>m.site===site.id&&m.kind==="photo"&&m.slot===String(si)).sort((a,b)=>a.t-b.t);
+  wrap.querySelectorAll("img").forEach(i=>URL.revokeObjectURL(i.src));
+  wrap.innerHTML="";
+  all.forEach(m=>{
+    const url=URL.createObjectURL(m.blob);
+    const el=document.createElement("div"); el.className="thumb";
+    el.innerHTML=`<img alt="${esc(site.name)} 현장 사진">
+      <button type="button" class="pen" aria-label="사진 위에 표시하기">✎</button>
+      <button type="button" class="del" aria-label="이 사진 지우기">×</button>`;
+    const img=el.querySelector("img"); img.src=url; img.onclick=()=>openPhoto(m.blob);
+    el.querySelector(".del").onclick=async()=>{
+      if(await ask("이 사진을 지울까요?","지우기")){ await mediaDel(m.id); renderThumbs(box,site,si); }
+    };
+    el.querySelector(".pen").onclick=()=>openAnnotate(m,()=>renderThumbs(box,site,si));
+    wrap.appendChild(el);
+  });
+}
+
+function initSketch(box,site){
+  const cv=box.querySelector("#sk"); if(!cv) return;
+  const ctx=cv.getContext("2d");
+  ctx.fillStyle="#fff"; ctx.fillRect(0,0,cv.width,cv.height);
+  ctx.lineWidth=3; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.strokeStyle="#16211f";
+  let strokes=[],cur=null,loaded=false,wiped=false;
+  mediaAll().then(all=>{
+    const rec=all.find(m=>m.site===site.id&&m.kind==="sketch");
+    if(rec){const img=new Image();
+      img.onload=()=>{ const u=img.src;
+        if(!wiped){ ctx.drawImage(img,0,0,cv.width,cv.height); loaded=true; }
+        URL.revokeObjectURL(u); };
+      img.src=URL.createObjectURL(rec.blob);}
+  });
+  const pos=e=>{const r=cv.getBoundingClientRect();return [(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height];};
+  cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);cur=[pos(e)];});
+  cv.addEventListener("pointermove",e=>{if(!cur)return;const p=pos(e),q=cur[cur.length-1];
+    ctx.beginPath();ctx.moveTo(q[0],q[1]);ctx.lineTo(p[0],p[1]);ctx.stroke();cur.push(p);});
+  const end=()=>{if(cur&&cur.length>1)strokes.push(cur);cur=null;};
+  cv.addEventListener("pointerup",end); cv.addEventListener("pointercancel",end);
+  const redraw=()=>{ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);ctx.strokeStyle="#16211f";
+    strokes.forEach(s=>{ctx.beginPath();ctx.moveTo(s[0][0],s[0][1]);s.slice(1).forEach(p=>ctx.lineTo(p[0],p[1]));ctx.stroke();});};
+  box.querySelectorAll("[data-sk]").forEach(b=>{
+    b.onclick=async()=>{
+      if(b.dataset.sk==="undo"){if(loaded&&!strokes.length){flash("저장된 그림은 전체 지우기로 지웁니다");return;}strokes.pop();redraw();}
+      if(b.dataset.sk==="clear"){
+        if(await ask("그림을 모두 지울까요?","지우기")){
+          strokes=[]; loaded=false; wiped=true; redraw();
+          try{ await mediaDel(`${site.id}|sketch`); }catch(e){}
+          flash("그림을 지웠습니다");
+        }
+      }
+      if(b.dataset.sk==="save"){wiped=false;cv.toBlob(async blob=>{await mediaPut({id:`${site.id}|sketch`,site:site.id,kind:"sketch",blob,t:Date.now()});flash("그림을 저장했습니다");},"image/png");}
+    };
+  });
+}
+
+/* 사진 위에 표시하기 — 펜 모드 / 세기 모드 */
+function openAnnotate(rec, done){
+  const ov=document.createElement("div"); ov.className="modal open annot";
+  ov.innerHTML=`<div class="annotbox">
+      <div class="annottop">
+        <div class="modes">
+          <button class="btn" data-m="count" aria-pressed="true">세기</button>
+          <button class="btn" data-m="pen" aria-pressed="false">그리기</button>
+        </div>
+        <span class="count" data-count>표시한 개수 0</span>
+      </div>
+      <canvas></canvas>
+      <div class="annotbar">
+        <button class="btn" data-a="undo">하나 되돌리기</button>
+        <button class="btn" data-a="cancel">취소</button>
+        <button class="btn solid" data-a="save">표시 저장</button>
+      </div></div>`;
+  document.body.appendChild(ov);
+  const cv=ov.querySelector("canvas"), ctx=cv.getContext("2d");
+  const countEl=ov.querySelector("[data-count]");
+  const img=new Image(); const url=URL.createObjectURL(rec.blob);
+  const items=[];           // {type:"stroke",pts:[]} | {type:"dot",x,y}
+  let mode="count", cur=null;
+  img.onload=()=>{ cv.width=img.naturalWidth; cv.height=img.naturalHeight; draw(); };
+  img.src=url;
+  const R=()=>Math.max(13, cv.width/46);
+  const LW=()=>Math.max(4, cv.width/230);
+  const dots=()=>items.filter(it=>it.type==="dot");
+  function draw(){
+    ctx.drawImage(img,0,0,cv.width,cv.height);
+    ctx.lineCap="round"; ctx.lineJoin="round";
+    items.filter(it=>it.type==="stroke").forEach(st=>{
+      ctx.strokeStyle="#e8342a"; ctx.lineWidth=LW();
+      ctx.beginPath(); ctx.moveTo(st.pts[0][0],st.pts[0][1]);
+      st.pts.slice(1).forEach(p=>ctx.lineTo(p[0],p[1])); ctx.stroke();
+    });
+    const r=R();
+    dots().forEach((dt,i)=>{
+      ctx.beginPath(); ctx.arc(dt.x,dt.y,r,0,Math.PI*2);
+      ctx.fillStyle="#e8342a"; ctx.fill();
+      ctx.lineWidth=Math.max(2,r/6); ctx.strokeStyle="#fff"; ctx.stroke();
+      ctx.fillStyle="#fff"; ctx.font=`700 ${Math.round(r*1.25)}px system-ui,sans-serif`;
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      ctx.fillText(String(i+1), dt.x, dt.y+r*0.06);
+    });
+    countEl.textContent=`표시한 개수 ${dots().length}`;
+  }
+  const pos=e=>{const b=cv.getBoundingClientRect();
+    return [(e.clientX-b.left)*cv.width/b.width,(e.clientY-b.top)*cv.height/b.height];};
+  cv.addEventListener("pointerdown",e=>{
+    const [x,y]=pos(e);
+    if(mode==="count"){
+      const r=R()*1.4;
+      const hit=dots().find(dt=>Math.hypot(dt.x-x,dt.y-y)<r);
+      if(hit) items.splice(items.indexOf(hit),1); else items.push({type:"dot",x,y});
+      draw(); return;
+    }
+    cv.setPointerCapture(e.pointerId); cur={type:"stroke",pts:[[x,y]]}; items.push(cur);
+  });
+  cv.addEventListener("pointermove",e=>{ if(!cur)return; cur.pts.push(pos(e)); draw(); });
+  const end=()=>{ cur=null; };
+  cv.addEventListener("pointerup",end); cv.addEventListener("pointercancel",end);
+  ov.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{
+    mode=b.dataset.m;
+    ov.querySelectorAll("[data-m]").forEach(x=>x.setAttribute("aria-pressed", x===b));
+  });
+  function close(){ URL.revokeObjectURL(url); ov.remove(); }
+  ov.querySelectorAll("[data-a]").forEach(b=>b.onclick=()=>{
+    if(b.dataset.a==="undo"){ items.pop(); draw(); }
+    if(b.dataset.a==="cancel") close();
+    if(b.dataset.a==="save"){
+      const n=dots().length;
+      cv.toBlob(async blob=>{
+        await mediaPut({...rec, blob, annotated:true});
+        flash(n?`${n}개를 표시해 저장했습니다`:"표시한 사진을 저장했습니다");
+        close(); done&&done();
+      },"image/jpeg",.85);
+    }
+  });
+}
+
+/* 두 지점 사이 거리 재기 — 각 지점에서 기록한 GPS 좌표 이용 */
+function gpsOf(id){
+  const g=(state.sites[id]||{}).gps; if(!g) return null;
+  const m=g.match(/(-?\d+\.\d+),\s*(-?\d+\.\d+)\s*\(±(\d+)m\)/);
+  return m?{lat:+m[1],lon:+m[2],acc:+m[3]}:null;
+}
+function haversine(a,b){
+  const R=6371000, rad=x=>x*Math.PI/180;
+  const dLat=rad(b.lat-a.lat), dLon=rad(b.lon-a.lon);
+  const h=Math.sin(dLat/2)**2+Math.cos(rad(a.lat))*Math.cos(rad(b.lat))*Math.sin(dLon/2)**2;
+  return 2*R*Math.asin(Math.sqrt(h));
+}
+function initDistance(box, site, d){
+  const host=box.querySelector("#distBox"), out=box.querySelector("#distOut"),
+        mapHost=box.querySelector("#distMap");
+  if(!host) return;
+  const pts=[];
+  TRAIL.courses.forEach(c=>c.sites.forEach(s2=>{
+    const g=gpsOf(s2.id); if(g) pts.push({id:s2.id,name:s2.name,...g});
+  }));
+  if(pts.length<2){
+    if(mapHost) mapHost.remove();
+    host.innerHTML=`<p class="hint" style="margin:0">아직 위치를 기록한 지점이 ${pts.length}곳뿐입니다. 각 지점의 <b>장소</b>에서 현재 위치를 먼저 기록하세요.</p>`;
+    return;
+  }
+  const opts=sel=>pts.map(p=>`<option value="${esc(p.id)}"${p.id===sel?" selected":""}>${esc(p.name)}</option>`).join("");
+  const a0=d.distA&&pts.some(p=>p.id===d.distA)?d.distA:pts[0].id;
+  const b0=d.distB&&pts.some(p=>p.id===d.distB)?d.distB:pts[pts.length-1].id;
+  host.innerHTML=`<div class="distrow">
+      <select id="distA">${opts(a0)}</select><span>에서</span>
+      <select id="distB">${opts(b0)}</select><span>까지</span>
+    </div>`;
+  const A=host.querySelector("#distA"), B=host.querySelector("#distB");
+
+  // ── 항공사진 위 지도 ──
+  const MP=TRAIL.map;
+  const det=MP.lat[0]*MP.lon[1]-MP.lat[1]*MP.lon[0];
+  const toPx=(la,lo)=>{
+    const dl=la-MP.lat[2], dn=lo-MP.lon[2];
+    return [ (dl*MP.lon[1]-MP.lat[1]*dn)/det, (MP.lat[0]*dn-dl*MP.lon[0])/det ];
+  };
+  const toLL=(x,y)=>[MP.lat[0]*x+MP.lat[1]*y+MP.lat[2], MP.lon[0]*x+MP.lon[1]*y+MP.lon[2]];
+  let tapA=d.tapA||null, tapB=d.tapB||null;
+
+  function drawMap(){
+    if(!mapHost) return;
+    const ia=pts.findIndex(p=>p.id===A.value), ib=pts.findIndex(p=>p.id===B.value);
+    const g=[`<svg viewBox="0 0 ${MP.w} ${MP.h}" width="100%" id="mapSvg" style="display:block;touch-action:manipulation">
+      <image href="${MP.src}" x="0" y="0" width="${MP.w}" height="${MP.h}"/>`];
+    const seen=[];
+    pts.forEach((p,i2)=>{
+      const [x,y]=toPx(p.lat,p.lon);
+      if(x<-20||y<-20||x>MP.w+20||y>MP.h+20) return;
+      seen.push(i2);
+      const on=(i2===ia||i2===ib);
+      g.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${Math.max(4,Math.min(p.acc/1.6,30))}" fill="#ffd34d" opacity=".22"/>`);
+      g.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${on?8:5}" fill="${on?"#ffd34d":"#ffffff"}" stroke="#1b1b1b" stroke-width="2"/>`);
+      g.push(`<text x="${x.toFixed(1)}" y="${(y-13).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="700"
+        fill="#fff" stroke="#000" stroke-width="3.5" paint-order="stroke">${esc(p.name)}</text>`);
+    });
+    if(ia>=0&&ib>=0&&ia!==ib&&seen.includes(ia)&&seen.includes(ib)){
+      const a1=toPx(pts[ia].lat,pts[ia].lon), b1=toPx(pts[ib].lat,pts[ib].lon);
+      g.push(`<line x1="${a1[0]}" y1="${a1[1]}" x2="${b1[0]}" y2="${b1[1]}" stroke="#ffd34d" stroke-width="3" stroke-dasharray="9 6"/>`);
+    }
+    if(tapA){ g.push(mark(tapA,"A")); }
+    if(tapB){ g.push(mark(tapB,"B")); }
+    if(tapA&&tapB){
+      g.push(`<line x1="${tapA[0]}" y1="${tapA[1]}" x2="${tapB[0]}" y2="${tapB[1]}" stroke="#45d4ff" stroke-width="3"/>`);
+    }
+    // 축척 막대 200 m
+    const px200=200/1.6;
+    g.push(`<g transform="translate(16,${MP.h-16})" stroke="#fff" fill="#fff">
+      <line x1="0" y1="0" x2="${px200}" y2="0" stroke-width="4"/>
+      <line x1="0" y1="-6" x2="0" y2="6" stroke-width="4"/>
+      <line x1="${px200}" y1="-6" x2="${px200}" y2="6" stroke-width="4"/>
+      <text x="${px200/2}" y="-10" text-anchor="middle" font-size="15" font-weight="700" stroke="#000" stroke-width="3.5" paint-order="stroke">200 m</text></g>`);
+    g.push(`<g transform="translate(${MP.w-28},28)" fill="#fff" stroke="#000" stroke-width="2.5" paint-order="stroke">
+      <polygon points="0,-18 6,4 0,-1 -6,4"/><text x="0" y="22" text-anchor="middle" font-size="15" font-weight="700">N</text></g>`);
+    g.push(`</svg>`);
+    mapHost.innerHTML=g.join("");
+    const svg=mapHost.querySelector("#mapSvg");
+    svg.addEventListener("click",e=>{
+      const r=svg.getBoundingClientRect();
+      const x=(e.clientX-r.left)*MP.w/r.width, y=(e.clientY-r.top)*MP.h/r.height;
+      if(tapA&&tapB){ tapA=[x,y]; tapB=null; } else if(!tapA){ tapA=[x,y]; } else { tapB=[x,y]; }
+      d.tapA=tapA; d.tapB=tapB; tapOut(); drawMap();
+    });
+  }
+  function mark(p,t){
+    return `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="8" fill="#45d4ff" stroke="#003" stroke-width="2"/>
+      <text x="${p[0].toFixed(1)}" y="${(p[1]-13).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="700"
+        fill="#45d4ff" stroke="#000" stroke-width="3.5" paint-order="stroke">${t}</text>`;
+  }
+  function tapOut(){
+    const el=box.querySelector("#tapOut"); if(!el) return;
+    if(tapA&&tapB){
+      const [la1,lo1]=toLL(tapA[0],tapA[1]), [la2,lo2]=toLL(tapB[0],tapB[1]);
+      const m=haversine({lat:la1,lon:lo1},{lat:la2,lon:lo2});
+      d.distTap=`사진에서 찍은 두 점 A–B : 약 ${Math.round(m)} m`;
+    } else d.distTap = tapA? "두 번째 점을 찍으세요" : "";
+    el.textContent=d.distTap; save();
+  }
+
+  function calc(){
+    d.distA=A.value; d.distB=B.value;
+    const p=pts.find(x=>x.id===A.value), q=pts.find(x=>x.id===B.value);
+    if(!p||!q||A.value===B.value){ d.dist="같은 지점입니다"; }
+    else{
+      const m=haversine(p,q), err=Math.round(p.acc+q.acc);
+      d.dist=`${p.name} → ${q.name} : 약 ${Math.round(m)} m (위치 오차 ±${err}m)`;
+    }
+    out.textContent=d.dist; drawMap(); save();
+  }
+  A.onchange=calc; B.onchange=calc; calc(); tapOut();
+}
+
+/* 물의 흐름과 자갈 — 인편상 구조 모형 */
+function initFlow(box, site, d){
+  const host=box.querySelector("#flowModel"), out=box.querySelector("#flowOut");
+  if(!host) return;
+  const W=420,H=230,bedY=176;
+  const cv=document.createElement("canvas");
+  cv.width=W*2; cv.height=H*2; cv.style.width="100%"; cv.style.display="block";
+  host.appendChild(cv);
+  const ctx=cv.getContext("2d"); ctx.scale(2,2);
+  const R=Math.random;
+
+  // 처음에는 아무렇게나 흩어져 놓인 자갈
+  const peb=[];
+  for(let i=0;i<14;i++){
+    peb.push({
+      x:24+i*27+(R()-.5)*14,
+      base:(R()<.3? 5+R()*7 : 0),              // 일부는 다른 자갈 위에 걸쳐 있음
+      rx:13+R()*6, ry:4.5+R()*2.2,
+      a:(R()-.5)*2.2,                           // 제멋대로 놓인 각도
+      from:0, target:null, delay:0,
+      c:["#8a6a52","#9c7b5f","#7b5f4a","#a98a6d","#6f5541"][(R()*5)|0]
+    });
+    const p=peb[peb.length-1]; p.from=p.a; p.target=p.a;
+  }
+  let dir=d.flowDir||0, t0=null;
+  const streaks=[];
+  for(let i=0;i<24;i++) streaks.push({x:R()*W, y:26+R()*130, len:12+R()*24, v:.6+R()*.9});
+
+  // 흐름 방향으로만 굴러가도록 목표 각도를 고른다 (오른쪽 흐름 → 시계 방향)
+  function aim(a, v){
+    const base = v>0 ? -0.42 : 0.42;           // 하류 쪽이 들린 자세
+    const P=Math.PI;
+    if(v>0){ let n=Math.ceil((a-base)/P); let t=base+n*P; if(t<a+0.12) t+=P; return t; }
+    let n=Math.floor((a-base)/P); let t=base+n*P; if(t>a-0.12) t-=P; return t;
+  }
+  function setDir(v){
+    dir=v; d.flowDir=v; t0=performance.now();
+    peb.forEach((p,i)=>{ p.from=p.a; p.target=aim(p.a,v); p.delay=(v>0?i:peb.length-1-i)*0.08; });
+    d.flow = v===0 ? "아직 고르지 않음"
+      : `물이 ${v>0?"왼쪽에서 오른쪽":"오른쪽에서 왼쪽"}으로 흘렀다고 판단`;
+    out.textContent=d.flow; save();
+  }
+  function draw(now){
+    if(!document.body.contains(cv)) return;
+    ctx.clearRect(0,0,W,H);
+    const g=ctx.createLinearGradient(0,8,0,bedY);
+    g.addColorStop(0,"#c3e2f0"); g.addColorStop(1,"#8ec3dd");
+    ctx.fillStyle=g; ctx.fillRect(0,8,W,bedY-8);
+    ctx.fillStyle="#cbb79a"; ctx.fillRect(0,bedY,W,H-bedY);
+    ctx.fillStyle="#b6a083"; ctx.fillRect(0,bedY,W,4);
+
+    if(dir!==0){
+      ctx.strokeStyle="#ffffff8c"; ctx.lineWidth=2.4; ctx.lineCap="round";
+      streaks.forEach(s=>{
+        s.x+=dir*s.v*1.8; if(s.x>W+40) s.x=-40; if(s.x<-40) s.x=W+40;
+        ctx.beginPath(); ctx.moveTo(s.x,s.y); ctx.lineTo(s.x+dir*s.len,s.y); ctx.stroke();
+      });
+      const cx=W/2, cy=24;
+      ctx.strokeStyle="#15486a"; ctx.fillStyle="#15486a"; ctx.lineWidth=4;
+      ctx.beginPath(); ctx.moveTo(cx-dir*52,cy); ctx.lineTo(cx+dir*34,cy); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(cx+dir*50,cy); ctx.lineTo(cx+dir*32,cy-9); ctx.lineTo(cx+dir*32,cy+9);
+      ctx.closePath(); ctx.fill();
+    }
+
+    const el=t0?(now-t0)/1000:99;
+    peb.forEach(p=>{
+      if(p.target!==null){
+        const k=Math.max(0,Math.min(1,(el-p.delay)/0.7));
+        const e=1-Math.pow(1-k,3);
+        p.a=p.from+(p.target-p.from)*e;
+      }
+      // 바닥(또는 걸친 높이)에 닿도록 중심 높이를 맞춘다
+      const hh=Math.hypot(p.rx*Math.sin(p.a), p.ry*Math.cos(p.a));
+      const y=bedY-2-p.base-hh;
+      ctx.save(); ctx.translate(p.x,y); ctx.rotate(p.a);
+      ctx.fillStyle=p.c; ctx.strokeStyle="#5c4634"; ctx.lineWidth=1.2;
+      ctx.beginPath(); ctx.ellipse(0,0,p.rx,p.ry,0,0,Math.PI*2); ctx.fill(); ctx.stroke();
+      ctx.restore();
+    });
+    requestAnimationFrame(draw);
+  }
+  requestAnimationFrame(draw);
+  if(dir!==0) setDir(dir); else out.textContent=d.flow||"아직 고르지 않음";
+  box.querySelectorAll("[data-flow]").forEach(b=>{
+    b.onclick=()=>{
+      setDir(+b.dataset.flow);
+      box.querySelectorAll("[data-flow]").forEach(x=>x.classList.toggle("solid",x===b));
+    };
+    if(+b.dataset.flow===dir) b.classList.add("solid");
+  });
+}
+
+/* 단층 모형 — 상반·하반·상반 세 덩어리 */
+function initFault(box, site, d){
+  const host=box.querySelector("#faultModel"), out=box.querySelector("#faultOut");
+  if(!host) return;
+  const W=400,H=240,LAY=48;
+  const colors=["#2bb3a3","#f2f0e6","#1f3566","#b4256b","#e8b93a"];
+  // 두 단층면: 안쪽으로 기울어, 바깥 두 덩어리가 단층면 위에 얹힌다(상반)
+  const LtopX=185, LbotX=85;    // 왼쪽 단층면 (위 185 → 아래 85)
+  const RtopX=265, RbotX=365;   // 오른쪽 단층면 (위 265 → 아래 365)
+  const lenL=Math.hypot(LtopX-LbotX,-H), uLx=(LtopX-LbotX)/lenL, uLy=-H/lenL;
+  const lenR=Math.hypot(RtopX-RbotX,-H), uRx=(RtopX-RbotX)/lenR, uRy=-H/lenR;
+  let tL = typeof d.faultTL==="number" ? d.faultTL : 0;
+  let tR = typeof d.faultTR==="number" ? d.faultTR : 0;
+
+  const bands = off => colors.map((c,i)=>
+    `<rect x="-60" y="${i*LAY+off}" width="${W+120}" height="${LAY}" fill="${c}"/>`).join("");
+  const stack = `${bands(-H)}${bands(0)}${bands(H)}`;
+
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="단층 모형">
+    <defs>
+      <clipPath id="cpL"><polygon points="0,0 ${LtopX},0 ${LbotX},${H} 0,${H}"/></clipPath>
+      <clipPath id="cpM"><polygon points="${LtopX},0 ${RtopX},0 ${RbotX},${H} ${LbotX},${H}"/></clipPath>
+      <clipPath id="cpR"><polygon points="${RtopX},0 ${W},0 ${W},${H} ${RbotX},${H}"/></clipPath>
+    </defs>
+    <g clip-path="url(#cpL)" id="blkL">${stack}</g>
+    <g clip-path="url(#cpM)">${bands(0)}</g>
+    <g clip-path="url(#cpR)" id="blkR">${stack}</g>
+    <line x1="${LbotX}" y1="${H}" x2="${LtopX}" y2="0" stroke="#111" stroke-width="3"/>
+    <line x1="${RbotX}" y1="${H}" x2="${RtopX}" y2="0" stroke="#111" stroke-width="3"/>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="#111" stroke-width="2"/>
+  </svg>`;
+  const svg=host.querySelector("svg"), bL=host.querySelector("#blkL"), bR=host.querySelector("#blkR");
+  const move=()=>{
+    bL.setAttribute("transform",`translate(${(uLx*tL).toFixed(1)},${(uLy*tL).toFixed(1)})`);
+    bR.setAttribute("transform",`translate(${(uRx*tR).toFixed(1)},${(uRy*tR).toFixed(1)})`);
+  };
+  const word=t=>Math.abs(t)<4?null:`${t>0?"위로":"아래로"} 약 ${(Math.abs(t)/LAY).toFixed(1)}개 층`;
+  const apply=()=>{
+    move(); d.faultTL=tL; d.faultTR=tR;
+    const a=word(tL), b=word(tR);
+    d.model = (!a&&!b) ? "아직 맞추지 않음"
+      : `왼쪽 덩어리 ${a||"그대로"}, 오른쪽 덩어리 ${b||"그대로"}`;
+    out.textContent=d.model; save();
+  };
+  apply();
+
+  const xL=y=>LtopX+(LbotX-LtopX)*y/H, xR=y=>RtopX+(RbotX-RtopX)*y/H;
+  let drag=null;
+  svg.style.touchAction="none";
+  svg.addEventListener("pointerdown",e=>{
+    const r=svg.getBoundingClientRect();
+    const x=(e.clientX-r.left)*W/r.width, y=(e.clientY-r.top)*H/r.height;
+    const side = x<xL(y) ? "L" : (x>xR(y) ? "R" : null);
+    if(!side) return;
+    svg.setPointerCapture(e.pointerId);
+    drag={side,x,y,t0:side==="L"?tL:tR};
+  });
+  svg.addEventListener("pointermove",e=>{
+    if(!drag) return;
+    const r=svg.getBoundingClientRect();
+    const x=(e.clientX-r.left)*W/r.width, y=(e.clientY-r.top)*H/r.height;
+    const ux=drag.side==="L"?uLx:uRx, uy=drag.side==="L"?uLy:uRy;
+    const t=Math.max(-96,Math.min(96, drag.t0+((x-drag.x)*ux+(y-drag.y)*uy)));
+    if(drag.side==="L") tL=t; else tR=t;
+    move();
+  });
+  const up=()=>{ if(drag){drag=null;apply();} };
+  svg.addEventListener("pointerup",up); svg.addEventListener("pointercancel",up);
+}
+
+let bigURL=null;
+function openPhoto(blob){if(bigURL)URL.revokeObjectURL(bigURL);bigURL=URL.createObjectURL(blob);
+  $("#photoBig").src=bigURL;$("#photoModal").classList.add("open");}
+function openURL(src){ if(bigURL){URL.revokeObjectURL(bigURL);bigURL=null;}
+  $("#photoBig").src=src; $("#photoModal").classList.add("open"); }
+function closePhoto(){$("#photoModal").classList.remove("open");if(bigURL){URL.revokeObjectURL(bigURL);bigURL=null;}}
+$("#photoClose").onclick=closePhoto;
+$("#photoModal").onclick=e=>{if(e.target.id!=="photoClose")closePhoto();};
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closePhoto();});
+
+function blobToDataURL(b){return new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b);});}
+function dataURLToBlob(u){const[hh,b]=u.split(",");const m=hh.match(/:(.*?);/)[1];const bin=atob(b);
+  const a=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return new Blob([a],{type:m});}
+$("#btnBackup").onclick=async()=>{
+  flash("백업 파일을 만드는 중…");
+  const media=await mediaAll(), packed=[];
+  for(const m of media) packed.push({id:m.id,site:m.site,slot:m.slot,kind:m.kind,t:m.t,data:await blobToDataURL(m.blob)});
+  const out={trail:TRAIL.id,saved:new Date().toISOString(),state,media:packed};
+  const name=`${(state.meta.klass||"").trim()||"답사"}_${(state.meta.name||"").trim()||"기록"}_${state.meta.date||""}.json`.replace(/\s+/g,"");
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(out)],{type:"application/json"}));
+  a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+};
+$("#btnRestore").onclick=()=>$("#restoreFile").click();
+$("#restoreFile").onchange=async e=>{
+  const f=e.target.files[0]; if(!f)return;
+  try{
+    const data=JSON.parse(await f.text());
+    if(!await ask("지금 기기에 있는 기록을 백업 파일의 내용으로 바꿉니다. 계속할까요?","불러오기")) return;
+    state=data.state; localStorage.setItem(KEY,JSON.stringify(state));
+    await mediaClear();
+    for(const m of (data.media||[])) await mediaPut({id:m.id,site:m.site,slot:m.slot,kind:m.kind,t:m.t,blob:dataURLToBlob(m.data)});
+    location.reload();
+  }catch(err){notify("백업 파일을 읽지 못했습니다. 다른 파일인지 확인해 주세요.");}
+  e.target.value="";
+};
+
+function row(l,t){return `<div class="row"><b>${esc(l)}</b><div>${esc(t)}</div></div>`;}
+$("#btnReport").onclick=async()=>{
+  flash("보고서를 만드는 중…");
+  const media=await mediaAll(), urlOf={}, made=[];
+  media.forEach(m=>{const u=URL.createObjectURL(m.blob);made.push(u);(urlOf[m.site]=urlOf[m.site]||[]).push({...m,url:u});});
+  const R=$("#report"), h=[];
+  h.push(`<h1>${esc(TRAIL.title)} 야외지질 답사 보고서</h1>`);
+  h.push(`<div class="meta">${esc(state.meta.klass||"")} ${esc(state.meta.name||"")} · 답사일 ${esc(state.meta.date||"")} · 날씨 ${esc(state.meta.weather||"")}</div>`);
+  TRAIL.courses.forEach(c=>{
+    h.push(`<div class="course">${esc(c.name)}</div>`);
+    c.sites.forEach(site=>{
+      const d=state.sites[site.id]||{}, mine=urlOf[site.id]||[];
+      const has=Object.entries(d).some(([k,v])=>k!=="caps"&&typeof v==="string"&&v.trim())||mine.length;
+      if(d.model&&/맞추지 않음/.test(d.model)&&!Object.entries(d).some(([k,v])=>k!=="caps"&&k!=="model"&&k!=="gps"&&typeof v==="string"&&v.trim())&&!mine.length) return;
+      if(!has) return;
+      h.push(`<section><h2>${esc(site.name)}<small>${esc(d.gps||"")}</small></h2>`);
+      if(site.keyq) h.push(`<p class="q">${esc(site.keyq)}</p>`);
+      if(site.kind==="tutorial"){
+        site.blocks.forEach(b=>{
+          if(b.asks){ b.asks.forEach(a=>{ const v=d[b.id+"_"+a.id]; if(v) h.push(row(b.label+" — "+a.label,v)); }); }
+          else if(d[b.id]) h.push(row(b.label,d[b.id]));
+        });
+      }else{
+        if(d.obs) h.push(row("관찰",d.obs));
+        if(site.model==="fault"&&d.model&&!/맞추지 않음/.test(d.model)) h.push(row("모형 맞추기",d.model));
+        if(site.model==="imbrication"&&d.flow&&!/고르지 않음/.test(d.flow)) h.push(row("물의 흐름 모형",d.flow));
+        if(site.tool==="distance"&&d.dist&&/m\)/.test(d.dist)) h.push(row("거리 재기",d.dist));
+        if(site.tool==="distance"&&d.distTap&&/m$/.test(d.distTap)) h.push(row("사진에서 잰 거리",d.distTap));
+        (site.interps||[]).forEach(it=>{ if(d[it.id]) h.push(row(it.label,d[it.id])); });
+      }
+      const photos=mine.filter(m=>m.kind==="photo");
+      if(photos.length){
+        h.push(`<div class="imgs">`);
+        photos.forEach(m=>{
+          const label = site.kind==="tutorial"
+            ? ((site.blocks[Number(m.slot)]||{}).photo||"")
+            : ((site.photos||[])[Number(m.slot)]||"");
+          const cap=(d.caps||{})[m.slot]||"";
+          h.push(`<figure><img src="${m.url}"><figcaption>${esc(label)}${cap?" — "+esc(cap):""}</figcaption></figure>`);
+        });
+        h.push(`</div>`);
+      }
+      const sk=mine.find(m=>m.kind==="sketch");
+      if(sk) h.push(`<div class="sk"><img src="${sk.url}"><figcaption style="font-size:8.5pt;color:#333">스케치</figcaption></div>`);
+      h.push(`</section>`);
+    });
+  });
+  R.innerHTML=h.join("");
+  const imgs=[...R.querySelectorAll("img")];
+  await Promise.all(imgs.map(im=>im.complete?Promise.resolve():new Promise(r=>{im.onload=im.onerror=r;})));
+  window.print();
+  setTimeout(()=>{R.innerHTML="";made.forEach(u=>URL.revokeObjectURL(u));},1500);
+};
+
+const SAFE_KEY=KEY+"-safety";
+let seen=false; try{seen=localStorage.getItem(SAFE_KEY)==="1";}catch(e){}
+if(!seen) $("#safetyModal").classList.add("open");
+$("#safetyOk").onclick=()=>{try{localStorage.setItem(SAFE_KEY,"1");}catch(e){} $("#safetyModal").classList.remove("open");};
+
+if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+if("serviceWorker" in navigator && location.protocol!=="file:")
+  window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
+render();
+</script>
+</body>
+</html>
