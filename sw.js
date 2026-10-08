@@ -1,7 +1,7 @@
 /* 화성지질공원 야외지질 기록장 — 오프라인 캐시
    파일을 고친 뒤에는 아래 CACHE 버전의 숫자를 올리세요.
    그래야 학생 기기에서 새 버전으로 바뀝니다. */
-const CACHE = "hwaseong-field-guide-v1";
+const CACHE = "hwaseong-field-guide-v2";
 const FILES = [
   "./",
   "index.html",
