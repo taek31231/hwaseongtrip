@@ -178,11 +178,23 @@ input:focus,textarea:focus{border-color:var(--focus);outline:none;
 .foot{margin-top:20px;text-align:center;font-size:12.5px;color:var(--muted)}
 
 #report{display:none}
+#report.open{display:block;position:fixed;inset:0;z-index:60;overflow:auto;background:#fff;
+  padding:calc(14px + env(safe-area-inset-top,0px)) 16px calc(86px + env(safe-area-inset-bottom,0px))}
+.repbar{position:fixed;left:50%;transform:translateX(-50%);z-index:61;
+  bottom:calc(12px + env(safe-area-inset-bottom,0px));width:min(560px,calc(100% - 24px));
+  display:none;gap:8px;padding:8px;background:#ffffffee;backdrop-filter:blur(8px);
+  border:1px solid #c9cec9;border-radius:14px;box-shadow:0 8px 26px #0003}
+.repbar.open{display:flex}
+.repbar .btn{flex:1;background:#f1f3f0;border:1px solid #c9cec9;color:#15211f}
+.repbar .btn.solid{background:#2f4a44;border-color:#2f4a44;color:#fff}
+.rephelp{margin:0 0 14px;padding:10px 12px;border:1px solid #c9cec9;border-radius:10px;
+  background:#f4f6f3;color:#3c4a46;font-size:12.5px;line-height:1.5}
 @media print{
   :root{--bg:#fff;--card:#fff;--ink:#000;--muted:#333;--line:#999;--soft:#fff;--accent:#000;--accent-soft:#fff}
   html,body{background:#fff}
-  .topbar,.toolbar,.wrap,.modal,.savenote{display:none !important}
+  .topbar,.toolbar,.wrap,.modal,.savenote,.repbar,.rephelp{display:none !important}
   #report{display:block}
+  #report.open{position:static;padding:0;overflow:visible}
   @page{size:A4;margin:14mm}
 }
 #report{color:#000;font-size:11.5pt;line-height:1.5}
@@ -244,6 +256,10 @@ input:focus,textarea:focus{border-color:var(--focus);outline:none;
 </div>
 
 <div id="report"></div>
+<div class="repbar" id="repbar">
+  <button class="btn" id="repClose">닫기</button>
+  <button class="btn solid" id="repPrint">인쇄 · PDF 저장</button>
+</div>
 
 <script>
 /* =====================================================================
@@ -1237,7 +1253,11 @@ function openURL(src){ if(bigURL){URL.revokeObjectURL(bigURL);bigURL=null;}
 function closePhoto(){$("#photoModal").classList.remove("open");if(bigURL){URL.revokeObjectURL(bigURL);bigURL=null;}}
 $("#photoClose").onclick=closePhoto;
 $("#photoModal").onclick=e=>{if(e.target.id!=="photoClose")closePhoto();};
-document.addEventListener("keydown",e=>{if(e.key==="Escape")closePhoto();});
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape") return;
+  if($("#photoModal").classList.contains("open")) { closePhoto(); return; }
+  if($("#report").classList.contains("open")) closeReport();
+});
 
 function blobToDataURL(b){return new Promise(r=>{const f=new FileReader();f.onload=()=>r(f.result);f.readAsDataURL(b);});}
 function dataURLToBlob(u){const[hh,b]=u.split(",");const m=hh.match(/:(.*?);/)[1];const bin=atob(b);
@@ -1267,7 +1287,19 @@ $("#restoreFile").onchange=async e=>{
 };
 
 function row(l,t){return `<div class="row"><b>${esc(l)}</b><div>${esc(t)}</div></div>`;}
+let repURLs=[];
+function closeReport(){
+  $("#report").classList.remove("open");
+  $("#repbar").classList.remove("open");
+  $("#report").innerHTML="";
+  document.body.style.overflow="";
+  repURLs.forEach(u=>URL.revokeObjectURL(u)); repURLs=[];
+}
+$("#repClose").onclick=closeReport;
+$("#repPrint").onclick=()=>{ try{ window.print(); }catch(e){ notify("이 브라우저에서는 인쇄 창을 열 수 없습니다. 브라우저 메뉴에서 인쇄 또는 공유를 눌러 PDF로 저장하세요."); } };
+
 $("#btnReport").onclick=async()=>{
+ try{
   flash("보고서를 만드는 중…");
   const media=await mediaAll(), urlOf={}, made=[];
   media.forEach(m=>{const u=URL.createObjectURL(m.blob);made.push(u);(urlOf[m.site]=urlOf[m.site]||[]).push({...m,url:u});});
@@ -1319,11 +1351,17 @@ $("#btnReport").onclick=async()=>{
       h.push(`</section>`);
     });
   });
-  R.innerHTML=h.join("");
+  repURLs.forEach(u=>URL.revokeObjectURL(u)); repURLs=made;
+  R.innerHTML=`<p class="rephelp">아래가 완성된 보고서입니다. <b>인쇄 · PDF 저장</b>을 누르고 대상에서 <b>PDF로 저장</b>을 고르세요.
+    버튼을 눌러도 창이 열리지 않으면, 브라우저 메뉴(또는 공유 버튼)에서 <b>인쇄</b>를 고르면 됩니다.</p>` + h.join("");
+  R.classList.add("open"); $("#repbar").classList.add("open");
+  document.body.style.overflow="hidden"; R.scrollTop=0;
   const imgs=[...R.querySelectorAll("img")];
   await Promise.all(imgs.map(im=>im.complete?Promise.resolve():new Promise(r=>{im.onload=im.onerror=r;})));
-  window.print();
-  setTimeout(()=>{R.innerHTML="";made.forEach(u=>URL.revokeObjectURL(u));},1500);
+  flash("보고서가 준비되었습니다");
+ }catch(err){
+  notify("보고서를 만들지 못했습니다. ("+(err&&err.message?err.message:err)+")");
+ }
 };
 
 const SAFE_KEY=KEY+"-safety";
