@@ -128,6 +128,7 @@ input:focus,textarea:focus{border-color:var(--focus);outline:none;
 .sketchwrap canvas{display:block;width:100%;height:auto;touch-action:none;background:#fff}
 .sketchbar{display:flex;gap:7px;padding:8px;border-top:1px solid var(--line);background:var(--card)}
 .sketchbar .btn{padding:7px 11px;font-size:13px}
+.skstate{margin-left:auto;align-self:center;font-size:12px;color:var(--muted);text-align:right}
 
 .thumb .pen{right:auto;left:4px;background:#000a;font-size:15px}
 .figrow{display:flex;flex-wrap:wrap;gap:8px;margin:2px 0 10px}
@@ -258,6 +259,7 @@ input:focus,textarea:focus{border-color:var(--focus);outline:none;
 <div id="report"></div>
 <div class="repbar" id="repbar">
   <button class="btn" id="repClose">닫기</button>
+  <button class="btn" id="repSave">파일로 저장</button>
   <button class="btn solid" id="repPrint">인쇄 · PDF 저장</button>
 </div>
 
@@ -654,7 +656,7 @@ function renderCourse(v){
       <div class="sketchbar">
         <button class="btn" type="button" data-sk="undo">한 획 지우기</button>
         <button class="btn" type="button" data-sk="clear">전체 지우기</button>
-        <button class="btn solid" type="button" data-sk="save">그림 저장</button>
+        <span class="skstate" data-skstate>그리면 자동으로 저장됩니다</span>
       </div></div>`;
   };
   const figHTML=f=>{
@@ -835,41 +837,67 @@ async function renderThumbs(box,site,si){
 function initSketch(box, site, slot){
   slot = slot || "sketch";
   const cv=box.querySelector(`[data-canvas="${slot}"]`); if(!cv) return;
-  const bar=cv.closest(".sketchwrap");
+  const wrap=cv.closest(".sketchwrap");
+  const note=wrap?wrap.querySelector("[data-skstate]"):null;
   const recId=`${site.id}|${slot}`;
   const ctx=cv.getContext("2d");
-  ctx.fillStyle="#fff"; ctx.fillRect(0,0,cv.width,cv.height);
   ctx.lineWidth=3; ctx.lineCap="round"; ctx.lineJoin="round"; ctx.strokeStyle="#16211f";
-  let strokes=[],cur=null,loaded=false,wiped=false;
+
+  let strokes=[], cur=null, bg=null, dirty=false, timer=null;
+
+  function paint(){
+    ctx.fillStyle="#fff"; ctx.fillRect(0,0,cv.width,cv.height);
+    if(bg) ctx.drawImage(bg,0,0,cv.width,cv.height);
+    ctx.strokeStyle="#16211f"; ctx.lineWidth=3;
+    strokes.forEach(st=>{ctx.beginPath();ctx.moveTo(st[0][0],st[0][1]);
+      st.slice(1).forEach(p=>ctx.lineTo(p[0],p[1]));ctx.stroke();});
+  }
+  paint();
+
+  // 저장해 둔 그림 불러오기
   mediaAll().then(all=>{
     const rec=all.find(m=>m.id===recId);
-    if(rec){const img=new Image();
-      img.onload=()=>{ const u=img.src;
-        if(!wiped){ ctx.drawImage(img,0,0,cv.width,cv.height); loaded=true; }
-        URL.revokeObjectURL(u); };
-      img.src=URL.createObjectURL(rec.blob);}
+    if(!rec||dirty) return;
+    const img=new Image(), u=URL.createObjectURL(rec.blob);
+    img.onload=()=>{ bg=img; paint(); URL.revokeObjectURL(u); };
+    img.src=u;
   });
-  const pos=e=>{const r=cv.getBoundingClientRect();return [(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height];};
-  cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);cur=[pos(e)];});
+
+  function store(msg){
+    clearTimeout(timer);
+    timer=setTimeout(()=>{
+      cv.toBlob(async blob=>{
+        try{
+          await mediaPut({id:recId,site:site.id,kind:"sketch",slot,blob,t:Date.now()});
+          if(note) note.textContent="저장됨";
+        }catch(e){ if(note) note.textContent="저장 공간이 부족합니다"; }
+      },"image/png");
+    }, 700);
+    if(note) note.textContent=msg||"저장하는 중…";
+  }
+
+  const pos=e=>{const r=cv.getBoundingClientRect();
+    return [(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height];};
+  cv.addEventListener("pointerdown",e=>{try{cv.setPointerCapture(e.pointerId);}catch(err){}dirty=true;cur=[pos(e)];});
   cv.addEventListener("pointermove",e=>{if(!cur)return;const p=pos(e),q=cur[cur.length-1];
     ctx.beginPath();ctx.moveTo(q[0],q[1]);ctx.lineTo(p[0],p[1]);ctx.stroke();cur.push(p);});
-  const end=()=>{if(cur&&cur.length>1)strokes.push(cur);cur=null;};
+  const end=()=>{ if(cur&&cur.length>1){ strokes.push(cur); store(); } cur=null; };
   cv.addEventListener("pointerup",end); cv.addEventListener("pointercancel",end);
-  const redraw=()=>{ctx.fillStyle="#fff";ctx.fillRect(0,0,cv.width,cv.height);ctx.strokeStyle="#16211f";
-    strokes.forEach(st=>{ctx.beginPath();ctx.moveTo(st[0][0],st[0][1]);st.slice(1).forEach(p=>ctx.lineTo(p[0],p[1]));ctx.stroke();});};
-  (bar||box).querySelectorAll("[data-sk]").forEach(b=>{
+
+  (wrap||box).querySelectorAll("[data-sk]").forEach(b=>{
     b.onclick=async()=>{
-      if(b.dataset.sk==="undo"){if(loaded&&!strokes.length){flash("저장된 그림은 전체 지우기로 지웁니다");return;}strokes.pop();redraw();}
+      if(b.dataset.sk==="undo"){
+        if(!strokes.length){ if(note) note.textContent="되돌릴 획이 없습니다. 모두 지우려면 전체 지우기를 누르세요"; return; }
+        strokes.pop(); paint(); store();
+      }
       if(b.dataset.sk==="clear"){
         if(await ask("그림을 모두 지울까요?","지우기")){
-          strokes=[]; loaded=false; wiped=true; redraw();
+          strokes=[]; bg=null; dirty=true; paint();
+          clearTimeout(timer);
           try{ await mediaDel(recId); }catch(e){}
-          flash("그림을 지웠습니다");
+          if(note) note.textContent="지웠습니다";
         }
       }
-      if(b.dataset.sk==="save"){wiped=false;cv.toBlob(async blob=>{
-        await mediaPut({id:recId,site:site.id,kind:"sketch",slot,blob,t:Date.now()});
-        flash("그림을 저장했습니다");},"image/png");}
     };
   });
 }
@@ -1287,22 +1315,87 @@ $("#restoreFile").onchange=async e=>{
 };
 
 function row(l,t){return `<div class="row"><b>${esc(l)}</b><div>${esc(t)}</div></div>`;}
-let repURLs=[];
 function closeReport(){
   $("#report").classList.remove("open");
   $("#repbar").classList.remove("open");
   $("#report").innerHTML="";
   document.body.style.overflow="";
-  repURLs.forEach(u=>URL.revokeObjectURL(u)); repURLs=[];
+  repBody="";
+}
+let repBody="", repName="보고서";
+const REPORT_CSS = `#report{color:#000;font-size:11.5pt;line-height:1.5}
+#report h1{font-size:19pt;margin:0 0 4pt}
+#report .meta{font-size:10.5pt;color:#333;margin-bottom:12pt;padding-bottom:8pt;border-bottom:1.5pt solid #000}
+#report .course{font-size:14pt;margin:14pt 0 8pt;padding-bottom:3pt;border-bottom:1pt solid #000}
+#report section{break-inside:avoid;page-break-inside:avoid;margin-bottom:13pt;padding-bottom:9pt;border-bottom:.5pt solid #bbb}
+#report h2{font-size:13pt;margin:0 0 6pt}
+#report h2 small{font-weight:400;font-size:9.5pt;color:#444;margin-left:6pt}
+#report .q{font-size:11pt;font-style:italic;margin:0 0 7pt}
+#report .row{margin:0 0 6pt}
+#report .row b{display:block;font-size:9.5pt;color:#333}
+#report .row div{white-space:pre-wrap}
+#report .imgs{display:flex;flex-wrap:wrap;gap:6pt;margin-top:6pt}
+#report figure{margin:0;width:31%}
+#report figure img{width:100%;border:.5pt solid #999}
+#report figcaption{font-size:8.5pt;color:#333;margin-top:2pt}
+#report .sk{width:62%;margin-top:6pt}
+#report .sk img{width:100%;border:.5pt solid #999}`;
+function standaloneReport(forPrint){
+  return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${esc(repName)}</title><style>
+*{box-sizing:border-box}
+body{margin:0;padding:16px;background:#fff;
+  font-family:system-ui,-apple-system,"Apple SD Gothic Neo","Noto Sans KR",sans-serif}
+.tip{max-width:760px;margin:0 auto 16px;padding:12px 14px;border:1px solid #c9cec9;border-radius:10px;
+  background:#f4f6f3;color:#3c4a46;font-size:13.5px;line-height:1.55}
+.tip button{margin-top:10px;width:100%;padding:11px;border:0;border-radius:10px;
+  background:#2f4a44;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+#report{display:block;max-width:760px;margin:0 auto}
+${REPORT_CSS}
+@media print{ .tip{display:none!important} body{padding:0} @page{size:A4;margin:14mm} }
+</style></head><body>
+<div class="tip">브라우저 메뉴(또는 공유 버튼)에서 <b>인쇄</b>를 고른 뒤, 대상에서 <b>PDF로 저장</b>을 선택하세요.
+<button onclick="window.print()">인쇄 · PDF 저장</button></div>
+<div id="report">${repBody}</div>
+${forPrint?'<script>window.addEventListener("load",()=>setTimeout(()=>{try{window.print()}catch(e){}},400));<\/script>':''}
+</body></html>`;
 }
 $("#repClose").onclick=closeReport;
-$("#repPrint").onclick=()=>{ try{ window.print(); }catch(e){ notify("이 브라우저에서는 인쇄 창을 열 수 없습니다. 브라우저 메뉴에서 인쇄 또는 공유를 눌러 PDF로 저장하세요."); } };
+$("#repPrint").onclick=async()=>{
+  // 1차: 이 화면에서 바로 인쇄
+  let printed=false;
+  try{ if(typeof window.print==="function"){ window.print(); printed=true; } }catch(e){}
+  // 2차: 막히는 환경이면 새 창에서 열기
+  setTimeout(async()=>{
+    if(document.visibilityState==="hidden") return;
+    const w=window.open("","_blank");
+    if(w){
+      const html=standaloneReport(true);
+      w.document.open(); w.document.write(html); w.document.close();
+    }else{
+      notify("새 창이 차단되었습니다. 아래 '파일로 저장'을 눌러 받은 뒤, 그 파일을 열어 인쇄하세요.");
+    }
+  }, printed?900:0);
+};
+$("#repSave").onclick=()=>{
+  try{
+    const blob=new Blob([standaloneReport(false)],{type:"text/html;charset=utf-8"});
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(blob); a.download=repName+".html"; a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href),5000);
+    flash("보고서 파일을 저장했습니다");
+  }catch(e){ notify("파일을 저장하지 못했습니다."); }
+};
 
 $("#btnReport").onclick=async()=>{
  try{
   flash("보고서를 만드는 중…");
-  const media=await mediaAll(), urlOf={}, made=[];
-  media.forEach(m=>{const u=URL.createObjectURL(m.blob);made.push(u);(urlOf[m.site]=urlOf[m.site]||[]).push({...m,url:u});});
+  const media=await mediaAll(), urlOf={};
+  for(const m of media){
+    const u=await blobToDataURL(m.blob);
+    (urlOf[m.site]=urlOf[m.site]||[]).push({...m,url:u});
+  }
   const R=$("#report"), h=[];
   h.push(`<h1>${esc(TRAIL.title)} 야외지질 답사 보고서</h1>`);
   h.push(`<div class="meta">${esc(state.meta.klass||"")} ${esc(state.meta.name||"")} · 답사일 ${esc(state.meta.date||"")} · 날씨 ${esc(state.meta.weather||"")}</div>`);
@@ -1351,9 +1444,10 @@ $("#btnReport").onclick=async()=>{
       h.push(`</section>`);
     });
   });
-  repURLs.forEach(u=>URL.revokeObjectURL(u)); repURLs=made;
+  repBody=h.join("");
+  repName=`${(state.meta.klass||"").trim()}_${(state.meta.name||"").trim()}_답사보고서`.replace(/^_+|\s+/g,"")||"답사보고서";
   R.innerHTML=`<p class="rephelp">아래가 완성된 보고서입니다. <b>인쇄 · PDF 저장</b>을 누르고 대상에서 <b>PDF로 저장</b>을 고르세요.
-    버튼을 눌러도 창이 열리지 않으면, 브라우저 메뉴(또는 공유 버튼)에서 <b>인쇄</b>를 고르면 됩니다.</p>` + h.join("");
+    인쇄 창이 뜨지 않으면 보고서가 새 창으로 열립니다. 그래도 안 되면 <b>파일로 저장</b>을 눌러 받은 뒤, 그 파일을 열어 인쇄하세요.</p>` + repBody;
   R.classList.add("open"); $("#repbar").classList.add("open");
   document.body.style.overflow="hidden"; R.scrollTop=0;
   const imgs=[...R.querySelectorAll("img")];
