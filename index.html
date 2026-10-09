@@ -124,8 +124,13 @@ input:focus,textarea:focus{border-color:var(--focus);outline:none;
 .slot header small{font-size:12px;color:var(--muted);font-weight:650}
 .shootrow{display:flex;gap:7px;flex-wrap:wrap}
 .shootrow .btn{flex:1;min-width:120px}
-.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:9px}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px;margin-top:9px}
+.thumbcell{display:flex;flex-direction:column;gap:5px}
+.thumbcell .cap{font-size:12.5px;padding:7px 9px;border-radius:8px}
 .thumb{position:relative;aspect-ratio:4/3;border-radius:9px;overflow:hidden;background:var(--soft)}
+.thumb .idx{position:absolute;left:5px;bottom:5px;min-width:19px;height:19px;padding:0 5px;
+  border-radius:999px;background:#000a;color:#fff;font-size:11px;font-weight:800;
+  display:grid;place-items:center;pointer-events:none}
 .thumb img{width:100%;height:100%;object-fit:cover;cursor:zoom-in;display:block}
 .thumb button{position:absolute;right:4px;top:4px;width:27px;height:27px;border:0;border-radius:50%;
   background:#000a;color:#fff;font-weight:800;cursor:pointer;line-height:1}
@@ -207,20 +212,23 @@ input:focus,textarea:focus{border-color:var(--focus);outline:none;
 #report{color:#000;font-size:11.5pt;line-height:1.5}
 #report h1{font-size:19pt;margin:0 0 4pt}
 #report .meta{font-size:10.5pt;color:#333;margin-bottom:12pt;padding-bottom:8pt;border-bottom:1.5pt solid #000}
-#report .course{font-size:14pt;margin:14pt 0 8pt;padding-bottom:3pt;border-bottom:1pt solid #000}
-#report section{break-inside:avoid;page-break-inside:avoid;margin-bottom:13pt;padding-bottom:9pt;border-bottom:.5pt solid #bbb}
-#report h2{font-size:13pt;margin:0 0 6pt}
+#report .course{font-size:14pt;margin:14pt 0 8pt;padding-bottom:3pt;border-bottom:1pt solid #000;
+  break-after:avoid;page-break-after:avoid}
+#report section{margin-bottom:13pt;padding-bottom:9pt;border-bottom:.5pt solid #bbb}
+#report h2{font-size:13pt;margin:0 0 6pt;break-after:avoid;page-break-after:avoid}
 #report h2 small{font-weight:400;font-size:9.5pt;color:#444;margin-left:6pt}
 #report .q{font-size:11pt;font-style:italic;margin:0 0 7pt}
-#report .row{margin:0 0 6pt}
+#report .row{margin:0 0 6pt;break-inside:avoid;page-break-inside:avoid}
 #report .row b{display:block;font-size:9.5pt;color:#333}
 #report .row div{white-space:pre-wrap}
-#report .imgs{display:flex;flex-wrap:wrap;gap:6pt;margin-top:6pt}
-#report figure{margin:0;width:31%}
-#report figure img{width:100%;border:.5pt solid #999}
-#report figcaption{font-size:8.5pt;color:#333;margin-top:2pt}
-#report .sk{width:62%;margin-top:6pt}
+#report .imgs{display:grid;grid-template-columns:repeat(3,1fr);gap:7pt 6pt;margin-top:6pt;
+  align-items:start;break-inside:auto}
+#report figure{margin:0;break-inside:avoid;page-break-inside:avoid}
+#report figure img{display:block;width:100%;height:34mm;object-fit:cover;border:.5pt solid #999}
+#report figcaption{font-size:8.5pt;color:#333;margin-top:2pt;line-height:1.35}
+#report .sk{width:62%;margin-top:6pt;break-inside:avoid;page-break-inside:avoid}
 #report .sk img{width:100%;border:.5pt solid #999}
+#report .q{break-after:avoid;page-break-after:avoid}
 </style>
 </head>
 <body>
@@ -348,7 +356,7 @@ const TRAIL = {
         photos:["전경","노두","근접"],
         interps:[
           {id:"i1", label:"이 지층을 이루는 암석을 표본과 맞춰 보고, 아래에서 위로 어떤 암석이 차례로 쌓여 있는지 설명해 보세요."},
-          {id:"i15", label:"조금 전에 본 상한염과 이곳 중한염 중 어느 쪽 지층이 더 오래되었을까요? 두 곳의 지층이 놓인 높이와 기울기를 떠올려 근거와 함께 쓰세요."},
+          {id:"i15", label:"상한염과 이곳 중한염 중 어느 쪽 지층이 더 오래되었을까요? 두 곳의 지층이 놓인 높이와 기울기를 떠올려 근거와 함께 쓰세요."},
           {id:"i2", label:"바위 표면에 벌집처럼 파인 구멍(타포니)이 있습니다. 어떻게 만들어졌을까요? 시간이 더 지나면 이 구멍과 바위는 어떻게 될까요?"},
           {id:"i3", label:"여기 놓인 공룡알은 복제품입니다. 원본은 아래 사진처럼 떼어 내어 전시실에 옮겨져 있습니다. 화석을 발견된 자리에 그대로 두는 것과 옮겨 보관하는 것 중 어느 쪽이 나을지, 내 입장과 근거를 쓰세요.",
            figure:{src:"assets/img/fig-i3.webp", caption:"대전 천연기념물센터에 전시된 화성 고정리 공룡알 화석(천연기념물 제414호)"}},
@@ -652,7 +660,6 @@ function photoSlot(label, si, d, extra){
     <input type="file" accept="image/*" capture="environment" multiple hidden data-file="${si}" data-cam>
     <input type="file" accept="image/*" multiple hidden data-file="${si}" data-lib>
     <div class="thumbs" data-thumbs="${si}"></div>
-    <input type="text" data-cap="${si}" placeholder="사진 설명" value="${esc((d.caps||{})[si]||"")}" style="margin-top:8px">
   </div>`;
 }
 
@@ -775,9 +782,6 @@ function renderCourse(v){
     t.addEventListener("input",()=>{grow(t);d[t.dataset.f]=t.value;save();
       strip.children[siteIdx].classList.toggle("done",siteDone(site));});
   });
-  box.querySelectorAll("[data-cap]").forEach(i=>{
-    i.addEventListener("input",()=>{d.caps=d.caps||{};d.caps[i.dataset.cap]=i.value;save();});
-  });
   box.querySelector("#gpsBtn").onclick=e=>{
     const btn=e.currentTarget,out=box.querySelector("#gpsVal");
     if(!navigator.geolocation){out.textContent="이 기기에서는 위치를 쓸 수 없습니다";return;}
@@ -829,18 +833,28 @@ async function renderThumbs(box,site,si){
   const all=(await mediaAll()).filter(m=>m.site===site.id&&m.kind==="photo"&&m.slot===String(si)).sort((a,b)=>a.t-b.t);
   wrap.querySelectorAll("img").forEach(i=>URL.revokeObjectURL(i.src));
   wrap.innerHTML="";
-  all.forEach(m=>{
+  const dd=S(site.id);
+  all.forEach((m,n)=>{
     const url=URL.createObjectURL(m.blob);
-    const el=document.createElement("div"); el.className="thumb";
-    el.innerHTML=`<img alt="${esc(site.name)} 현장 사진">
+    const cell=document.createElement("div"); cell.className="thumbcell";
+    cell.innerHTML=`<div class="thumb"><img alt="${esc(site.name)} 현장 사진">
       <button type="button" class="pen" aria-label="사진 위에 표시하기">✎</button>
-      <button type="button" class="del" aria-label="이 사진 지우기">×</button>`;
-    const img=el.querySelector("img"); img.src=url; img.onclick=()=>openPhoto(m.blob);
-    el.querySelector(".del").onclick=async()=>{
-      if(await ask("이 사진을 지울까요?","지우기")){ await mediaDel(m.id); renderThumbs(box,site,si); }
+      <button type="button" class="del" aria-label="이 사진 지우기">×</button>
+      <span class="idx">${n+1}</span></div>
+      <input type="text" class="cap" placeholder="이 사진 설명" value="${esc((dd.caps||{})[m.id]||"")}">`;
+    const img=cell.querySelector("img"); img.src=url; img.onclick=()=>openPhoto(m.blob);
+    cell.querySelector(".del").onclick=async()=>{
+      if(await ask("이 사진을 지울까요?","지우기")){
+        await mediaDel(m.id);
+        if(dd.caps) delete dd.caps[m.id];
+        save(); renderThumbs(box,site,si);
+      }
     };
-    el.querySelector(".pen").onclick=()=>openAnnotate(m,()=>renderThumbs(box,site,si));
-    wrap.appendChild(el);
+    cell.querySelector(".pen").onclick=()=>openAnnotate(m,()=>renderThumbs(box,site,si));
+    cell.querySelector(".cap").addEventListener("input",e=>{
+      dd.caps=dd.caps||{}; dd.caps[m.id]=e.target.value; save();
+    });
+    wrap.appendChild(cell);
   });
 }
 
@@ -1418,8 +1432,8 @@ $("#btnReport").onclick=async()=>{
         if(d.obs) h.push(row("관찰",d.obs));
         if(site.model==="fault"&&d.model&&!/맞추지 않음/.test(d.model)) h.push(row("모형 맞추기",d.model));
         if(site.model==="imbrication"&&d.flow&&!/고르지 않음/.test(d.flow)) h.push(row("물의 흐름 모형",d.flow));
-        if(site.tool==="distance"&&d.dist&&/m\)/.test(d.dist)) h.push(row("거리 재기",d.dist));
-        if(site.tool==="distance"&&d.distTap&&/m$/.test(d.distTap)) h.push(row("사진에서 잰 거리",d.distTap));
+        if(site.tool==="distance"&&d.dist&&/m\)/.test(d.dist)) h.push(row("지점 좌표로 잰 거리",d.dist));
+        if(site.tool==="distance"&&d.distTap&&/m$/.test(d.distTap)) h.push(row("항공사진에서 집어 잰 거리",d.distTap));
         (site.interps||[]).forEach(it=>{
           if(it.draw){
             const g=mine.find(m=>m.kind==="sketch"&&m.slot==="draw-"+it.id);
@@ -1435,7 +1449,7 @@ $("#btnReport").onclick=async()=>{
           const label = site.kind==="tutorial"
             ? ((site.blocks[Number(m.slot)]||{}).photo||"")
             : ((site.photos||[])[Number(m.slot)]||"");
-          const cap=(d.caps||{})[m.slot]||"";
+          const cap=(d.caps||{})[m.id] || (d.caps||{})[m.slot] || "";
           h.push(`<figure><img src="${m.url}"><figcaption>${esc(label)}${cap?" — "+esc(cap):""}</figcaption></figure>`);
         });
         h.push(`</div>`);
