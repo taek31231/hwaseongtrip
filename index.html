@@ -54,6 +54,12 @@ body{margin:0;background:var(--bg);color:var(--ink);
 button,input,textarea{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 .wrap{max-width:720px;margin:0 auto;padding:14px 14px 118px}
+.inapp{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:11px 14px;background:var(--warn-soft);color:var(--warn);
+  font-size:13px;font-weight:650;line-height:1.5;border-bottom:1px solid var(--line)}
+.inapp span{flex:1;min-width:200px}
+.inapp .btn{flex:none;padding:7px 12px;font-size:13px;background:var(--card);border-color:currentColor;color:inherit}
+.inapp[hidden]{display:none}
 
 .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
 .topbar .inner{max-width:720px;margin:0 auto;padding:10px 14px 0}
@@ -219,6 +225,10 @@ input:focus,textarea:focus{border-color:var(--focus);outline:none;
 </head>
 <body>
 
+<div class="inapp" id="inappBar" hidden>
+  <span>네이버·카카오톡 같은 앱 안에서는 기록이 사라지거나 저장이 막힐 수 있습니다. <b>크롬이나 사파리로 열어 주세요.</b></span>
+  <button class="btn" id="copyLink">주소 복사</button>
+</div>
 <header class="topbar">
   <div class="inner">
     <p class="brand">화성지질공원 야외지질 기록장</p>
@@ -1340,7 +1350,7 @@ const REPORT_CSS = `#report{color:#000;font-size:11.5pt;line-height:1.5}
 #report figcaption{font-size:8.5pt;color:#333;margin-top:2pt}
 #report .sk{width:62%;margin-top:6pt}
 #report .sk img{width:100%;border:.5pt solid #999}`;
-function standaloneReport(forPrint){
+function standaloneReport(){
   return `<!doctype html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${esc(repName)}</title><style>
@@ -1358,29 +1368,20 @@ ${REPORT_CSS}
 <div class="tip">브라우저 메뉴(또는 공유 버튼)에서 <b>인쇄</b>를 고른 뒤, 대상에서 <b>PDF로 저장</b>을 선택하세요.
 <button onclick="window.print()">인쇄 · PDF 저장</button></div>
 <div id="report">${repBody}</div>
-${forPrint?'<script>window.addEventListener("load",()=>setTimeout(()=>{try{window.print()}catch(e){}},400));<\/script>':''}
 </body></html>`;
 }
 $("#repClose").onclick=closeReport;
-$("#repPrint").onclick=async()=>{
-  // 1차: 이 화면에서 바로 인쇄
-  let printed=false;
-  try{ if(typeof window.print==="function"){ window.print(); printed=true; } }catch(e){}
-  // 2차: 막히는 환경이면 새 창에서 열기
-  setTimeout(async()=>{
-    if(document.visibilityState==="hidden") return;
-    const w=window.open("","_blank");
-    if(w){
-      const html=standaloneReport(true);
-      w.document.open(); w.document.write(html); w.document.close();
-    }else{
-      notify("새 창이 차단되었습니다. 아래 '파일로 저장'을 눌러 받은 뒤, 그 파일을 열어 인쇄하세요.");
-    }
-  }, printed?900:0);
+$("#repPrint").onclick=()=>{
+  if(IN_APP){
+    notify("네이버·카카오톡 앱 안에서는 인쇄가 막혀 있습니다. 위쪽 '주소 복사'를 눌러 크롬이나 사파리에 붙여넣고 다시 보고서를 만들어 주세요.");
+    return;
+  }
+  try{ window.print(); }
+  catch(e){ notify("인쇄 창을 열 수 없습니다. '파일로 저장'을 눌러 받은 뒤 그 파일을 열어 인쇄하세요."); }
 };
 $("#repSave").onclick=()=>{
   try{
-    const blob=new Blob([standaloneReport(false)],{type:"text/html;charset=utf-8"});
+    const blob=new Blob([standaloneReport()],{type:"text/html;charset=utf-8"});
     const a=document.createElement("a");
     a.href=URL.createObjectURL(blob); a.download=repName+".html"; a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),5000);
@@ -1446,8 +1447,9 @@ $("#btnReport").onclick=async()=>{
   });
   repBody=h.join("");
   repName=`${(state.meta.klass||"").trim()}_${(state.meta.name||"").trim()}_답사보고서`.replace(/^_+|\s+/g,"")||"답사보고서";
-  R.innerHTML=`<p class="rephelp">아래가 완성된 보고서입니다. <b>인쇄 · PDF 저장</b>을 누르고 대상에서 <b>PDF로 저장</b>을 고르세요.
-    인쇄 창이 뜨지 않으면 보고서가 새 창으로 열립니다. 그래도 안 되면 <b>파일로 저장</b>을 눌러 받은 뒤, 그 파일을 열어 인쇄하세요.</p>` + repBody;
+  R.innerHTML=`<p class="rephelp">${IN_APP
+    ? "네이버·카카오톡 앱 안에서는 인쇄와 저장이 막혀 있습니다. 위쪽 <b>주소 복사</b>를 눌러 크롬이나 사파리에 붙여넣고 다시 열어 주세요."
+    : "완성된 보고서입니다. <b>인쇄 · PDF 저장</b>을 누르고 대상에서 <b>PDF로 저장</b>을 고르세요."}</p>` + repBody;
   R.classList.add("open"); $("#repbar").classList.add("open");
   document.body.style.overflow="hidden"; R.scrollTop=0;
   const imgs=[...R.querySelectorAll("img")];
@@ -1462,6 +1464,22 @@ const SAFE_KEY=KEY+"-safety";
 let seen=false; try{seen=localStorage.getItem(SAFE_KEY)==="1";}catch(e){}
 if(!seen) $("#safetyModal").classList.add("open");
 $("#safetyOk").onclick=()=>{try{localStorage.setItem(SAFE_KEY,"1");}catch(e){} $("#safetyModal").classList.remove("open");};
+
+const UA=navigator.userAgent||"";
+const IN_APP=/NAVER|KAKAOTALK|Instagram|FBAN|FBAV|Line\/|DaumApps|everytimeApp|; wv\)/i.test(UA);
+if(IN_APP){
+  $("#inappBar").hidden=false;
+  $("#copyLink").onclick=async()=>{
+    const url=location.href;
+    try{ await navigator.clipboard.writeText(url); flash("주소를 복사했습니다"); }
+    catch(e){
+      const t=document.createElement("textarea"); t.value=url; document.body.appendChild(t);
+      t.select(); try{document.execCommand("copy"); flash("주소를 복사했습니다");}
+      catch(e2){ notify("주소를 복사하지 못했습니다. 주소창을 길게 눌러 복사하세요.\n\n"+url); }
+      t.remove();
+    }
+  };
+}
 
 if(navigator.storage&&navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 if("serviceWorker" in navigator && location.protocol!=="file:")
