@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#24302e">
-<title>화성 국가지질공원 야외지질 기록장</title>
+<title>화성지질공원 야외지질 기록장</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -128,6 +128,8 @@ input:focus,textarea:focus{border-color:var(--focus);outline:none;
 .thumbcell{display:flex;flex-direction:column;gap:5px}
 .thumbcell .cap{font-size:12.5px;padding:7px 9px;border-radius:8px}
 .thumb{position:relative;aspect-ratio:4/3;border-radius:9px;overflow:hidden;background:var(--soft)}
+.thumb .marked{position:absolute;right:5px;bottom:5px;padding:2px 8px;border-radius:999px;
+  background:#e8342ad9;color:#fff;font-size:11px;font-weight:800;pointer-events:none}
 .thumb .idx{position:absolute;left:5px;bottom:5px;min-width:19px;height:19px;padding:0 5px;
   border-radius:999px;background:#000a;color:#fff;font-size:11px;font-weight:800;
   display:grid;place-items:center;pointer-events:none}
@@ -240,7 +242,7 @@ input:focus,textarea:focus{border-color:var(--focus);outline:none;
 </div>
 <header class="topbar">
   <div class="inner">
-    <p class="brand">화성 국가지질공원 야외지질 기록장</p>
+    <p class="brand">화성지질공원 야외지질 기록장</p>
     <div class="maintabs" id="maintabs" role="tablist"></div>
   </div>
 </header>
@@ -289,7 +291,7 @@ input:focus,textarea:focus{border-color:var(--focus);outline:none;
    tutorial: {kind:"tutorial", blocks:[{id,label,photo}]}
    ===================================================================== */
 const TRAIL = {
-  id:"hwaseong", title:"화성 국가지질공원",
+  id:"hwaseong", title:"화성지질공원",
   // 공룡알 화석지 항공사진 + 좌표 변환식 (기준점 4곳으로 맞춤, 1픽셀 ≈ 1.6m)
   map:{ w:956, h:532,
     lat:[-5.045476347631378e-8, -1.4524394115492112e-5, 37.26355565300682],
@@ -537,9 +539,9 @@ const KEY="fieldlog-"+TRAIL.id+"-v4", DB_NAME="FieldLogDB-"+TRAIL.id;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
-let state={meta:{},sites:{}};
+let state={meta:{},sites:{},wrap:{}};
 try{const raw=localStorage.getItem(KEY); if(raw) state=Object.assign(state,JSON.parse(raw));}catch(e){}
-state.meta=state.meta||{}; state.sites=state.sites||{};
+state.meta=state.meta||{}; state.sites=state.sites||{}; state.wrap=state.wrap||{};
 
 function ask(msg, okLabel){
   return new Promise(res=>{
@@ -601,11 +603,11 @@ function accentOn(){
 }
 function siteDone(s){
   const d=state.sites[s.id]; if(!d) return false;
-  return Object.entries(d).some(([k,v])=>k!=="gps"&&k!=="caps"&&k!=="model"&&k!=="flow"&&k!=="dist"&&k!=="distTap"&&k!=="distA"&&k!=="distB"&&typeof v==="string"&&v.trim());
+  return Object.entries(d).some(([k,v])=>k!=="gps"&&k!=="caps"&&k!=="marks"&&k!=="model"&&k!=="flow"&&k!=="dist"&&k!=="distTap"&&k!=="distA"&&k!=="distB"&&typeof v==="string"&&v.trim());
 }
 function buildMainTabs(){
   const box=$("#maintabs"); box.innerHTML="";
-  [{id:"home",name:"기록장"},...TRAIL.courses.map(c=>({id:c.id,name:c.name}))].forEach(t=>{
+  [{id:"home",name:"기록장"},...TRAIL.courses.map(c=>({id:c.id,name:c.name})),{id:"wrap",name:"마무리"}].forEach(t=>{
     const b=document.createElement("button");
     b.type="button"; b.textContent=t.name; b.setAttribute("role","tab");
     b.setAttribute("aria-selected",t.id===tab);
@@ -616,7 +618,9 @@ function buildMainTabs(){
 function render(){
   accentOn(); buildMainTabs();
   const v=$("#view"); v.innerHTML="";
-  if(tab==="home") renderHome(v); else renderCourse(v);
+  if(tab==="home") renderHome(v);
+  else if(tab==="wrap") renderWrap(v);
+  else renderCourse(v);
   window.scrollTo({top:0});
 }
 
@@ -649,6 +653,29 @@ function renderHome(v){
   });
   $("#statusBody").innerHTML=h.join("");
   $("#statusBody").querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>{tab=b.dataset.go;siteIdx=+b.dataset.i;render();});
+}
+
+const WRAP_ASKS=[
+  {id:"learned", label:"오늘 새롭게 보고 배운 점",
+   hint:"어느 지점에서 무엇을 보고 그렇게 생각했는지 함께 적으면 좋습니다."},
+  {id:"next", label:"학교에 가서 더 알아볼 점",
+   hint:"현장에서 풀리지 않은 것, 더 찾아보고 싶은 것."}
+];
+function renderWrap(v){
+  const h=[`<section class="panel"><h2>답사를 마치며</h2><div class="body">
+    <p class="hint" style="margin:0 0 4px">편하게 쓰면 됩니다. 길이는 상관없습니다.</p>`];
+  WRAP_ASKS.forEach((a,i)=>{
+    h.push(`<p class="ask${i===0?"":""}" style="margin-top:${i===0?"16px":"20px"}">${esc(a.label)}</p>
+      <p class="hint" style="margin:0 0 6px">${esc(a.hint)}</p>
+      <textarea data-wrap="${esc(a.id)}" style="min-height:150px">${esc(state.wrap[a.id]||"")}</textarea>`);
+  });
+  h.push(`</div></section>
+    <p class="foot">다 썼으면 아래 <b>보고서 만들기</b>를 누르세요. 쓴 내용이 보고서 끝에 함께 실립니다.</p>`);
+  v.innerHTML=h.join("");
+  v.querySelectorAll("[data-wrap]").forEach(t=>{
+    grow(t);
+    t.addEventListener("input",()=>{grow(t);state.wrap[t.dataset.wrap]=t.value;save();});
+  });
 }
 
 function photoSlot(label, si, d, extra){
@@ -835,28 +862,33 @@ async function renderThumbs(box,site,si){
   wrap.querySelectorAll("img").forEach(i=>URL.revokeObjectURL(i.src));
   wrap.innerHTML="";
   const dd=S(site.id);
-  all.forEach((m,n)=>{
-    const url=URL.createObjectURL(m.blob);
+  for(let n=0;n<all.length;n++){
+    const m=all[n];
+    const marks=(dd.marks||{})[m.id];
+    const shown=await composeMarked(m.blob, marks);
+    const url=URL.createObjectURL(shown);
     const cell=document.createElement("div"); cell.className="thumbcell";
     cell.innerHTML=`<div class="thumb"><img alt="${esc(site.name)} 현장 사진">
       <button type="button" class="pen" aria-label="사진 위에 표시하기">✎</button>
       <button type="button" class="del" aria-label="이 사진 지우기">×</button>
-      <span class="idx">${n+1}</span></div>
+      <span class="idx">${n+1}</span>
+      ${hasMarks(marks)&&(marks.d||[]).length?`<span class="marked">표시 ${marks.d.length}</span>`:""}</div>
       <input type="text" class="cap" placeholder="이 사진 설명" value="${esc((dd.caps||{})[m.id]||"")}">`;
-    const img=cell.querySelector("img"); img.src=url; img.onclick=()=>openPhoto(m.blob);
+    const img=cell.querySelector("img"); img.src=url; img.onclick=()=>openPhoto(shown);
     cell.querySelector(".del").onclick=async()=>{
       if(await ask("이 사진을 지울까요?","지우기")){
         await mediaDel(m.id);
         if(dd.caps) delete dd.caps[m.id];
+        if(dd.marks) delete dd.marks[m.id];
         save(); renderThumbs(box,site,si);
       }
     };
-    cell.querySelector(".pen").onclick=()=>openAnnotate(m,()=>renderThumbs(box,site,si));
+    cell.querySelector(".pen").onclick=()=>openAnnotate(m, dd, ()=>renderThumbs(box,site,si));
     cell.querySelector(".cap").addEventListener("input",e=>{
       dd.caps=dd.caps||{}; dd.caps[m.id]=e.target.value; save();
     });
     wrap.appendChild(cell);
-  });
+  }
 }
 
 function initSketch(box, site, slot){
@@ -928,7 +960,41 @@ function initSketch(box, site, slot){
 }
 
 /* 사진 위에 표시하기 — 펜 모드 / 세기 모드 */
-function openAnnotate(rec, done){
+/* 표시(번호·펜)는 사진에 굽지 않고 좌표로 저장합니다.
+   원본 사진은 그대로 두고, 보여 줄 때만 겹쳐 그립니다. */
+function drawMarks(ctx, W, H, marks){
+  const R=Math.max(13, W/46), LW=Math.max(4, W/230);
+  ctx.lineCap="round"; ctx.lineJoin="round";
+  (marks.s||[]).forEach(st=>{
+    if(!st.length) return;
+    ctx.strokeStyle="#e8342a"; ctx.lineWidth=LW;
+    ctx.beginPath(); ctx.moveTo(st[0][0]*W, st[0][1]*H);
+    st.slice(1).forEach(p=>ctx.lineTo(p[0]*W, p[1]*H)); ctx.stroke();
+  });
+  (marks.d||[]).forEach((dt,i)=>{
+    const x=dt[0]*W, y=dt[1]*H;
+    ctx.beginPath(); ctx.arc(x,y,R,0,Math.PI*2);
+    ctx.fillStyle="#e8342a"; ctx.fill();
+    ctx.lineWidth=Math.max(2,R/6); ctx.strokeStyle="#fff"; ctx.stroke();
+    ctx.fillStyle="#fff"; ctx.font=`700 ${Math.round(R*1.25)}px system-ui,sans-serif`;
+    ctx.textAlign="center"; ctx.textBaseline="middle";
+    ctx.fillText(String(i+1), x, y+R*0.06);
+  });
+}
+function hasMarks(m){ return !!(m && ((m.d&&m.d.length) || (m.s&&m.s.length))); }
+async function composeMarked(blob, marks){
+  if(!hasMarks(marks)) return blob;
+  try{
+    const bmp=await createImageBitmap(blob);
+    const c=document.createElement("canvas"); c.width=bmp.width; c.height=bmp.height;
+    const ctx=c.getContext("2d"); ctx.drawImage(bmp,0,0);
+    drawMarks(ctx, c.width, c.height, marks);
+    bmp.close&&bmp.close();
+    return await new Promise(r=>c.toBlob(r,"image/jpeg",.85));
+  }catch(e){ return blob; }
+}
+
+function openAnnotate(rec, dd, done){
   const ov=document.createElement("div"); ov.className="modal open annot";
   ov.innerHTML=`<div class="annotbox">
       <div class="annottop">
@@ -948,43 +1014,39 @@ function openAnnotate(rec, done){
   const cv=ov.querySelector("canvas"), ctx=cv.getContext("2d");
   const countEl=ov.querySelector("[data-count]");
   const img=new Image(); const url=URL.createObjectURL(rec.blob);
-  const items=[];           // {type:"stroke",pts:[]} | {type:"dot",x,y}
+
+  // 전에 찍어 둔 표시를 그대로 이어서
+  const saved=(dd.marks||{})[rec.id]||{};
+  const items=[];
+  (saved.s||[]).forEach(st=>items.push({type:"stroke", pts:st.map(p=>p.slice())}));
+  (saved.d||[]).forEach(p=>items.push({type:"dot", x:p[0], y:p[1]}));
   let mode="count", cur=null;
+
   img.onload=()=>{ cv.width=img.naturalWidth; cv.height=img.naturalHeight; draw(); };
   img.src=url;
-  const R=()=>Math.max(13, cv.width/46);
-  const LW=()=>Math.max(4, cv.width/230);
   const dots=()=>items.filter(it=>it.type==="dot");
   function draw(){
+    if(!cv.width) return;
     ctx.drawImage(img,0,0,cv.width,cv.height);
-    ctx.lineCap="round"; ctx.lineJoin="round";
-    items.filter(it=>it.type==="stroke").forEach(st=>{
-      ctx.strokeStyle="#e8342a"; ctx.lineWidth=LW();
-      ctx.beginPath(); ctx.moveTo(st.pts[0][0],st.pts[0][1]);
-      st.pts.slice(1).forEach(p=>ctx.lineTo(p[0],p[1])); ctx.stroke();
-    });
-    const r=R();
-    dots().forEach((dt,i)=>{
-      ctx.beginPath(); ctx.arc(dt.x,dt.y,r,0,Math.PI*2);
-      ctx.fillStyle="#e8342a"; ctx.fill();
-      ctx.lineWidth=Math.max(2,r/6); ctx.strokeStyle="#fff"; ctx.stroke();
-      ctx.fillStyle="#fff"; ctx.font=`700 ${Math.round(r*1.25)}px system-ui,sans-serif`;
-      ctx.textAlign="center"; ctx.textBaseline="middle";
-      ctx.fillText(String(i+1), dt.x, dt.y+r*0.06);
+    drawMarks(ctx, cv.width, cv.height, {
+      s: items.filter(it=>it.type==="stroke").map(st=>st.pts),
+      d: dots().map(dt=>[dt.x,dt.y])
     });
     countEl.textContent=`표시한 개수 ${dots().length}`;
   }
+  const R=()=>Math.max(13, cv.width/46);
   const pos=e=>{const b=cv.getBoundingClientRect();
-    return [(e.clientX-b.left)*cv.width/b.width,(e.clientY-b.top)*cv.height/b.height];};
+    return [(e.clientX-b.left)/b.width,(e.clientY-b.top)/b.height];};
   cv.addEventListener("pointerdown",e=>{
     const [x,y]=pos(e);
     if(mode==="count"){
-      const r=R()*1.4;
-      const hit=dots().find(dt=>Math.hypot(dt.x-x,dt.y-y)<r);
+      const r=R()*1.4/cv.width;
+      const hit=dots().find(dt=>Math.hypot((dt.x-x),(dt.y-y)*cv.height/cv.width)<r);
       if(hit) items.splice(items.indexOf(hit),1); else items.push({type:"dot",x,y});
       draw(); return;
     }
-    cv.setPointerCapture(e.pointerId); cur={type:"stroke",pts:[[x,y]]}; items.push(cur);
+    try{cv.setPointerCapture(e.pointerId);}catch(err){}
+    cur={type:"stroke",pts:[[x,y]]}; items.push(cur);
   });
   cv.addEventListener("pointermove",e=>{ if(!cur)return; cur.pts.push(pos(e)); draw(); });
   const end=()=>{ cur=null; };
@@ -999,11 +1061,15 @@ function openAnnotate(rec, done){
     if(b.dataset.a==="cancel") close();
     if(b.dataset.a==="save"){
       const n=dots().length;
-      cv.toBlob(async blob=>{
-        await mediaPut({...rec, blob, annotated:true});
-        flash(n?`${n}개를 표시해 저장했습니다`:"표시한 사진을 저장했습니다");
-        close(); done&&done();
-      },"image/jpeg",.85);
+      dd.marks=dd.marks||{};
+      dd.marks[rec.id]={
+        s: items.filter(it=>it.type==="stroke").map(st=>st.pts),
+        d: dots().map(dt=>[dt.x,dt.y])
+      };
+      if(!hasMarks(dd.marks[rec.id])) delete dd.marks[rec.id];
+      save();
+      flash(n?`${n}개를 표시했습니다`:"표시를 저장했습니다");
+      close(); done&&done();
     }
   });
 }
@@ -1409,7 +1475,8 @@ $("#btnReport").onclick=async()=>{
   flash("보고서를 만드는 중…");
   const media=await mediaAll(), urlOf={};
   for(const m of media){
-    const u=await blobToDataURL(m.blob);
+    const marks=m.kind==="photo" ? ((state.sites[m.site]||{}).marks||{})[m.id] : null;
+    const u=await blobToDataURL(await composeMarked(m.blob, marks));
     (urlOf[m.site]=urlOf[m.site]||[]).push({...m,url:u});
   }
   const R=$("#report"), h=[];
@@ -1419,7 +1486,7 @@ $("#btnReport").onclick=async()=>{
     h.push(`<div class="course">${esc(c.name)}</div>`);
     c.sites.forEach(site=>{
       const d=state.sites[site.id]||{}, mine=urlOf[site.id]||[];
-      const has=Object.entries(d).some(([k,v])=>k!=="caps"&&typeof v==="string"&&v.trim())||mine.length;
+      const has=Object.entries(d).some(([k,v])=>k!=="caps"&&k!=="marks"&&typeof v==="string"&&v.trim())||mine.length;
       if(d.model&&/맞추지 않음/.test(d.model)&&!Object.entries(d).some(([k,v])=>k!=="caps"&&k!=="model"&&k!=="gps"&&typeof v==="string"&&v.trim())&&!mine.length) return;
       if(!has) return;
       h.push(`<section><h2>${esc(site.name)}<small>${esc(d.gps||"")}</small></h2>`);
@@ -1460,6 +1527,11 @@ $("#btnReport").onclick=async()=>{
       h.push(`</section>`);
     });
   });
+  if(WRAP_ASKS.some(a=>(state.wrap[a.id]||"").trim())){
+    h.push(`<div class="course">답사를 마치며</div><section>`);
+    WRAP_ASKS.forEach(a=>{ if((state.wrap[a.id]||"").trim()) h.push(row(a.label,state.wrap[a.id])); });
+    h.push(`</section>`);
+  }
   repBody=h.join("");
   repName=`${(state.meta.klass||"").trim()}_${(state.meta.name||"").trim()}_답사보고서`.replace(/^_+|\s+/g,"")||"답사보고서";
   R.innerHTML=`<p class="rephelp">${IN_APP
